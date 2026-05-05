@@ -11,23 +11,112 @@ bool BTree::Insert(int key, const Record& record) {
     if (root_page_id_ == BTreeNode::INVALID_PAGE_ID) {
         root_page_id_ = CreateNewNode(true);
     }
-    
-    page_id_t leaf_page_id = FindLeafPage(key);
+
+    std::vector<page_id_t> path;
+    page_id_t current = root_page_id_;
+    while (true) {
+        Page* page = buffer_pool_manager_->FetchPage(current);
+        if (!page) return false;
+        BTreeNode node = DeserializeNode(page);
+        buffer_pool_manager_->UnpinPage(current, false);
+        if (node.is_leaf) break;
+        path.push_back(current);
+        int idx = FindKeyIndex(node.keys, key);
+        current = node.children[idx];
+    }
+    page_id_t leaf_page_id = current;
+
     Page* leaf_page = buffer_pool_manager_->FetchPage(leaf_page_id);
     if (!leaf_page) return false;
-    
     BTreeNode leaf = DeserializeNode(leaf_page);
-    
-    if (leaf.keys.size() < BTREE_ORDER - 1) {
-        bool result = InsertIntoLeaf(leaf, key, record);
+
+    auto it = std::lower_bound(leaf.keys.begin(), leaf.keys.end(), key);
+    if (it != leaf.keys.end() && *it == key) {
+        buffer_pool_manager_->UnpinPage(leaf_page_id, false);
+        return false;
+    }
+
+    if (leaf.keys.size() < static_cast<size_t>(BTREE_ORDER - 1)) {
+        InsertIntoLeaf(leaf, key, record);
         SerializeNode(leaf, leaf_page);
-        buffer_pool_manager_->UnpinPage(leaf_page_id, true);
-        return result;
-    } else {
-        SplitLeafNode(leaf_page_id, key, record);
         buffer_pool_manager_->UnpinPage(leaf_page_id, true);
         return true;
     }
+
+    int idx = it - leaf.keys.begin();
+    leaf.keys.insert(leaf.keys.begin() + idx, key);
+    leaf.records.insert(leaf.records.begin() + idx, record);
+
+    int mid = leaf.keys.size() / 2;
+    page_id_t new_leaf_page_id = CreateNewNode(true);
+    Page* new_leaf_page = buffer_pool_manager_->FetchPage(new_leaf_page_id);
+    BTreeNode new_leaf = DeserializeNode(new_leaf_page);
+
+    new_leaf.keys.assign(leaf.keys.begin() + mid, leaf.keys.end());
+    new_leaf.records.assign(leaf.records.begin() + mid, leaf.records.end());
+    new_leaf.next_leaf = leaf.next_leaf;
+    leaf.keys.resize(mid);
+    leaf.records.resize(mid);
+    leaf.next_leaf = new_leaf_page_id;
+
+    int promote_key = new_leaf.keys.front();
+    SerializeNode(leaf, leaf_page);
+    SerializeNode(new_leaf, new_leaf_page);
+    buffer_pool_manager_->UnpinPage(leaf_page_id, true);
+    buffer_pool_manager_->UnpinPage(new_leaf_page_id, true);
+
+    page_id_t right_child = new_leaf_page_id;
+
+    while (!path.empty()) {
+        page_id_t parent_id = path.back();
+        path.pop_back();
+
+        Page* parent_page = buffer_pool_manager_->FetchPage(parent_id);
+        if (!parent_page) return false;
+        BTreeNode parent = DeserializeNode(parent_page);
+
+        if (parent.keys.size() < static_cast<size_t>(BTREE_ORDER - 1)) {
+            InsertIntoInternal(parent, promote_key, right_child);
+            SerializeNode(parent, parent_page);
+            buffer_pool_manager_->UnpinPage(parent_id, true);
+            return true;
+        }
+
+        InsertIntoInternal(parent, promote_key, right_child);
+
+        int pmid = parent.keys.size() / 2;
+        int new_promote = parent.keys[pmid];
+
+        page_id_t new_internal_id = CreateNewNode(false);
+        Page* new_internal_page = buffer_pool_manager_->FetchPage(new_internal_id);
+        BTreeNode new_internal = DeserializeNode(new_internal_page);
+
+        new_internal.keys.assign(parent.keys.begin() + pmid + 1, parent.keys.end());
+        new_internal.children.assign(parent.children.begin() + pmid + 1, parent.children.end());
+        parent.keys.resize(pmid);
+        parent.children.resize(pmid + 1);
+
+        SerializeNode(parent, parent_page);
+        SerializeNode(new_internal, new_internal_page);
+        buffer_pool_manager_->UnpinPage(parent_id, true);
+        buffer_pool_manager_->UnpinPage(new_internal_id, true);
+
+        promote_key = new_promote;
+        right_child = new_internal_id;
+    }
+
+    page_id_t new_root_id = CreateNewNode(false);
+    Page* new_root_page = buffer_pool_manager_->FetchPage(new_root_id);
+    BTreeNode new_root;
+    new_root.is_leaf = false;
+    new_root.keys.push_back(promote_key);
+    new_root.children.push_back(root_page_id_);
+    new_root.children.push_back(right_child);
+    SerializeNode(new_root, new_root_page);
+    buffer_pool_manager_->UnpinPage(new_root_id, true);
+    root_page_id_ = new_root_id;
+
+    return true;
 }
 
 bool BTree::Search(int key, Record& record) {
@@ -162,83 +251,6 @@ bool BTree::InsertIntoInternal(BTreeNode& internal, int key, page_id_t child_pag
     internal.keys.insert(it, key);
     internal.children.insert(internal.children.begin() + index + 1, child_page_id);
     return true;
-}
-
-void BTree::SplitLeafNode(page_id_t leaf_page_id, int key, const Record& record) {
-    Page* leaf_page = buffer_pool_manager_->FetchPage(leaf_page_id);
-    BTreeNode leaf = DeserializeNode(leaf_page);
-    
-    page_id_t new_leaf_page_id = CreateNewNode(true);
-    Page* new_leaf_page = buffer_pool_manager_->FetchPage(new_leaf_page_id);
-    BTreeNode new_leaf = DeserializeNode(new_leaf_page);
-    
-    std::vector<int> all_keys = leaf.keys;
-    std::vector<Record> all_records = leaf.records;
-    
-    auto it = std::lower_bound(all_keys.begin(), all_keys.end(), key);
-    int index = it - all_keys.begin();
-    all_keys.insert(it, key);
-    all_records.insert(all_records.begin() + index, record);
-    
-    int mid = all_keys.size() / 2;
-    
-    leaf.keys.assign(all_keys.begin(), all_keys.begin() + mid);
-    leaf.records.assign(all_records.begin(), all_records.begin() + mid);
-    
-    new_leaf.keys.assign(all_keys.begin() + mid, all_keys.end());
-    new_leaf.records.assign(all_records.begin() + mid, all_records.end());
-    new_leaf.next_leaf = leaf.next_leaf;
-    leaf.next_leaf = new_leaf_page_id;
-    
-    SerializeNode(leaf, leaf_page);
-    SerializeNode(new_leaf, new_leaf_page);
-    
-    buffer_pool_manager_->UnpinPage(new_leaf_page_id, true);
-}
-
-void BTree::SplitInternalNode(page_id_t internal_page_id, int key, page_id_t child_page_id) {
-    Page* internal_page = buffer_pool_manager_->FetchPage(internal_page_id);
-    BTreeNode internal = DeserializeNode(internal_page);
-    
-    page_id_t new_internal_page_id = CreateNewNode(false);
-    Page* new_internal_page = buffer_pool_manager_->FetchPage(new_internal_page_id);
-    BTreeNode new_internal = DeserializeNode(new_internal_page);
-    
-    std::vector<int> all_keys = internal.keys;
-    std::vector<page_id_t> all_children = internal.children;
-    
-    auto it = std::upper_bound(all_keys.begin(), all_keys.end(), key);
-    int key_index = it - all_keys.begin();
-    all_keys.insert(it, key);
-    all_children.insert(all_children.begin() + key_index + 1, child_page_id);
-    
-    int mid = all_keys.size() / 2;
-    int promote_key = all_keys[mid];
-    
-    internal.keys.assign(all_keys.begin(), all_keys.begin() + mid);
-    internal.children.assign(all_children.begin(), all_children.begin() + mid + 1);
-    
-    new_internal.keys.assign(all_keys.begin() + mid + 1, all_keys.end());
-    new_internal.children.assign(all_children.begin() + mid + 1, all_children.end());
-    
-    SerializeNode(internal, internal_page);
-    SerializeNode(new_internal, new_internal_page);
-    
-    buffer_pool_manager_->UnpinPage(new_internal_page_id, true);
-    
-    if (internal_page_id == root_page_id_) {
-        page_id_t new_root_id = CreateNewNode(false);
-        Page* new_root_page = buffer_pool_manager_->FetchPage(new_root_id);
-        BTreeNode new_root = DeserializeNode(new_root_page);
-        
-        new_root.keys.push_back(promote_key);
-        new_root.children.push_back(internal_page_id);
-        new_root.children.push_back(new_internal_page_id);
-        
-        SerializeNode(new_root, new_root_page);
-        buffer_pool_manager_->UnpinPage(new_root_id, true);
-        root_page_id_ = new_root_id;
-    }
 }
 
 int BTree::FindKeyIndex(const std::vector<int>& keys, int key) {

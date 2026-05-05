@@ -32,17 +32,13 @@ private:
     BufferPoolManager* buffer_pool_manager_;
     page_id_t root_page_id_{BTreeNode::INVALID_PAGE_ID};
 
-    BTreeNode* GetNode(page_id_t page_id);
     void SerializeNode(const BTreeNode& node, Page* page);
     BTreeNode DeserializeNode(Page* page);
-    
+
     page_id_t CreateNewNode(bool is_leaf);
     bool InsertIntoLeaf(BTreeNode& leaf, int key, const Record& record);
     bool InsertIntoInternal(BTreeNode& internal, int key, page_id_t child_page_id);
-    
-    void SplitLeafNode(page_id_t leaf_page_id, int key, const Record& record);
-    void SplitInternalNode(page_id_t internal_page_id, int key, page_id_t child_page_id);
-    
+
     page_id_t FindLeafPage(int key);
     int FindKeyIndex(const std::vector<int>& keys, int key);
 };

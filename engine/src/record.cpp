@@ -1,4 +1,5 @@
 #include "record.h"
+#include <cstdint>
 #include <sstream>
 
 Record::Record(const std::vector<Value>& values) : values_(values) {}

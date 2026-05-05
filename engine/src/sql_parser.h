@@ -47,5 +47,6 @@ private:
     
     std::unique_ptr<Query> ParseSelect(const std::vector<std::string>& tokens);
     std::unique_ptr<Query> ParseInsert(const std::vector<std::string>& tokens);
+    std::unique_ptr<Query> ParseDelete(const std::vector<std::string>& tokens);
     std::unique_ptr<Query> ParseCreateTable(const std::vector<std::string>& tokens);
 };

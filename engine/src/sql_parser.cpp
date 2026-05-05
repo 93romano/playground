@@ -15,11 +15,47 @@ std::unique_ptr<Query> SQLParser::Parse(const std::string& sql) {
         return ParseSelect(tokens);
     } else if (command == "INSERT") {
         return ParseInsert(tokens);
+    } else if (command == "DELETE") {
+        return ParseDelete(tokens);
     } else if (command == "CREATE") {
         return ParseCreateTable(tokens);
     }
-    
+
     return nullptr;
+}
+
+std::unique_ptr<Query> SQLParser::ParseDelete(const std::vector<std::string>& tokens) {
+    auto query = std::make_unique<Query>();
+    query->type = QueryType::DELETE;
+
+    size_t i = 1;
+    if (i < tokens.size() && ToUpper(tokens[i]) == "FROM") {
+        i++;
+        if (i < tokens.size()) {
+            query->table_name = tokens[i];
+            i++;
+        }
+    }
+
+    if (i < tokens.size() && ToUpper(tokens[i]) == "WHERE") {
+        i++;
+        while (i + 2 < tokens.size()) {
+            Condition condition;
+            condition.column = tokens[i];
+            condition.op = tokens[i + 1];
+            condition.value = ParseValue(tokens[i + 2]);
+            query->conditions.push_back(condition);
+
+            i += 3;
+            if (i < tokens.size() && ToUpper(tokens[i]) == "AND") {
+                i++;
+            } else {
+                break;
+            }
+        }
+    }
+
+    return query;
 }
 
 std::vector<std::string> SQLParser::Tokenize(const std::string& sql) {
