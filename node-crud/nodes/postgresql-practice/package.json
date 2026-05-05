@@ -1,0 +1,19 @@
+{
+  "name": "postgresql-practice",
+  "version": "1.0.0",
+  "description": "PostgreSQL 실습 및 테스트",
+  "main": "test.js",
+  "scripts": {
+    "test": "node test.js",
+    "setup": "psql -U postgres -f setup.sql",
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "author": "",
+  "license": "MIT"
+}

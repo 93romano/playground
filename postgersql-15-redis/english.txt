@@ -1,0 +1,6 @@
+A PostgreSQL cluster is a single running instance managed by one Postmaster. A cluster can contain multiple databases.
+PostgreSQL doesn't have separate concepts of 'users' and 'groups'-everthing is a role. A role with LOGIN privilege acts as a user, and a role without it acts as a group.
+
+Since you already have postgres_.., would you like to use that for our study? Or create a fresh one? Either way, let's continue to Topuc 3: Data Types whenever you're ready.
+ Each SQL statement must end with a semicolon(;)! Notice the prompt changed from =# to -#, which means PostgreSQL was still waiting for the statement to finish.
+"hello"

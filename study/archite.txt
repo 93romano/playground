@@ -1,0 +1,29 @@
+Topic 1: PostgreSQL Architecture                                                  
+                                                                                    
+  PostgreSQL uses a client/server, multi-process architecture (not multi-threaded). 
+  Let's break it down into three layers.
+                                                                                    
+  ---             
+  1. Process Architecture
+
+  Client (psql, app, etc.)
+      │
+      ▼
+  ┌─────────────────────────────────────────────┐
+  │              Postmaster (main process)       │
+  │         (listens for new connections)        │
+  └──────────────┬──────────────────────────────┘
+                 │  fork()
+                 ▼
+  ┌──────────────────────────┐
+  │   Backend Process        │  ← one per client connection
+  │   (handles SQL queries)  │
+  └──────────────────────────┘
+
+  Background Processes (always running):
+    ├── Background Writer  — flushes dirty pages from shared buffers to disk
+    ├── WAL Writer         — flushes WAL buffers to disk
+    ├── Checkpointer       — periodic full sync of data to disk
+    ├── Autovacuum Launcher — cleans up dead tuples (MVCC)
+    ├── Stats Collector     — gathers usage statistics
+    └── Logger             — writes log files

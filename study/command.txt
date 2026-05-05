@@ -1,0 +1,112 @@
+brew services list
+
+psql --version // postgres --versionw
+
+psql
+
+\l 데이터 베이스 목록 보기
+
+\q 종류
+
+
+CREATE DATABASE postgres_15_study;
+
+\c postgres_15_study
+
+
+여러 줄로 입력하던 도중에 명령어 취소하고 싶다면 ctrl+c 를 누른다.
+
+USERS 
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100) UNIQUE
+);
+
+\dt
+
+CREATE TABLE weather (
+    city            varchar(80),
+    temp_lo         int,
+    temp_hi         int,
+    prcp            real,
+    date            date
+);
+
+city: 도시 이름을 저장하는 문자열(80자까지)
+
+temp_lo, temp_hi: 최저, 최고 온도를 저장하는 정수
+
+prcp: 강수량을 저장하는 실수
+
+date: 날짜를 저장하는 타입
+
+CREATE TABLE cities (
+    name            varchar(80),
+    location        point
+);
+
+point 타입은 PostgreSQL에 내장된 지리 공간 데이터 타입입니다.
+
+
+
+INSERT INTO weather VALUES ('San Francisco', 46, 50, 0.25, '1994-11-27');
+INSERT INTO weather (city, temp_lo, temp_hi, date) VALUES ('San Francisco', 43, 57, '1994-11-29');
+INSERT INTO weather (date, city, temp_hi, temp_lo) VALUES ('1994-11-29', 'Hayward', 54, 37);
+
+SELECT * FROM weather WHERE city = 'San Francisco' ORDER BY date;
+
+SELECT city, temp_lo, temp_hi, prcp, date, location FROM weather, cities WHERE city = name;
+이 쿼리는 weather 테이블의 city 열과 cities 테이블의 name 열이 일치하는 행을 반환합니다.
+
+DROP TABLE weather;
+DROP TABLE cities;
+
+2.3.3. Schemas (스키마)
+스키마는 테이블, 데이터 타입, 함수와 같은 데이터베이스 객체를 논리적으로 그룹화하는 데 사용됩니다.
+
+---
+
+2.3.3. Schemas (스키마)
+스키마는 테이블, 데이터 타입, 함수와 같은 데이터베이스 객체를 논리적으로 그룹화하는 데 사용됩니다.
+
+CREATE SCHEMA 문을 사용하여 새 스키마를 생성할 수 있습니다.
+
+SQL
+
+CREATE SCHEMA my_schema;
+기본적으로 모든 사용자는 public 스키마에 객체를 생성할 수 있습니다. 이전에 생성한 weather 테이블과 cities 테이블은 public 스키마에 있습니다.
+
+새로 만든 my_schema에 테이블을 생성하려면 CREATE TABLE 문에 스키마 이름을 지정해야 합니다.
+
+SQL
+
+CREATE TABLE my_schema.weather (
+    city            varchar(80),
+    temp_lo         int,
+    temp_hi         int,
+    prcp            real,
+    date            date
+);
+이와 같이 스키마를 사용하면 같은 데이터베이스 내에서 동일한 이름의 테이블을 여러 개 만들 수 있으며, 사용자나 애플리케이션에 따라 다른 접근 권한을 설정하는 데도 유용합니다.
+---
+
+CREATE TABLE cities (
+    name            varchar(80) UNIQUE NOT NULL,
+    location        point
+);
+
+CREATE TABLE weather (
+    city            varchar(80) REFERENCES cities (name),
+    temp_lo         int,
+    temp_hi         int,
+    prcp            real,
+    date            date
+);
+이 FOREIGN KEY 제약 조건은 weather 테이블의 city 열에 삽입되는 모든 값이 cities 테이블의 name 열에 이미 존재해야 함을 보장합니다.
+
+-- 다시 시도
+내부 조인(Inner Join)
+
+
+CREATE INDEX city_idx ON weather (city);
