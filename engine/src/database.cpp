@@ -1,5 +1,6 @@
 #include "database.h"
 #include <iostream>
+#include <climits>
 
 Database::Database(const std::string& db_file) {
     storage_manager_ = std::make_unique<StorageManager>(db_file);
@@ -21,6 +22,8 @@ bool Database::ExecuteQuery(const std::string& sql) {
             return ExecuteSelect(*query);
         case QueryType::INSERT:
             return ExecuteInsert(*query);
+        case QueryType::DELETE:
+            return ExecuteDelete(*query);
         case QueryType::CREATE_TABLE:
             return ExecuteCreateTable(*query);
         default:
@@ -96,6 +99,50 @@ bool Database::ExecuteInsert(const Query& query) {
     int key = std::get<int>(query.values[0]);
     
     return table.index->Insert(key, record);
+}
+
+bool Database::ExecuteDelete(const Query& query) {
+    auto table_it = tables_.find(query.table_name);
+    if (table_it == tables_.end()) {
+        std::cerr << "Table not found: " << query.table_name << std::endl;
+        return false;
+    }
+
+    Table& table = *table_it->second;
+
+    if (query.conditions.size() == 1 &&
+        query.conditions[0].column == "id" &&
+        query.conditions[0].op == "=" &&
+        std::holds_alternative<int>(query.conditions[0].value)) {
+        int key = std::get<int>(query.conditions[0].value);
+        return table.index->Delete(key);
+    }
+
+    auto all_records = table.index->RangeScan(INT_MIN, INT_MAX);
+    std::vector<int> keys_to_delete;
+    for (const auto& record : all_records) {
+        bool matches = query.conditions.empty();
+        if (!matches) {
+            matches = true;
+            for (const auto& condition : query.conditions) {
+                if (!EvaluateCondition(record, condition, table)) {
+                    matches = false;
+                    break;
+                }
+            }
+        }
+        if (matches) {
+            Value id_val = record.GetValue(0);
+            if (std::holds_alternative<int>(id_val)) {
+                keys_to_delete.push_back(std::get<int>(id_val));
+            }
+        }
+    }
+
+    for (int key : keys_to_delete) {
+        table.index->Delete(key);
+    }
+    return true;
 }
 
 bool Database::ExecuteCreateTable(const Query& query) {

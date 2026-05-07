@@ -52,28 +52,25 @@ void StorageManager::CloseFile() {
 // ReadPage() - 데이터 조회
 std::unique_ptr<Page> StorageManager::ReadPage(page_id_t page_id) {
     auto page = std::make_unique<Page>(page_id);
-    
-    // 파일 포인터 이동
-    file_stream_.seekg(page_id * PAGE_SIZE, std::ios::beg);
-    // 파일 읽기
+
+    // 이전 read/write에서 fail/eof 비트가 설정됐을 수 있으므로 클리어
+    file_stream_.clear();
+    file_stream_.seekg(static_cast<std::streamoff>(page_id) * PAGE_SIZE, std::ios::beg);
     file_stream_.read(page->GetData(), PAGE_SIZE);
-    // 파일 읽기 크기 확인
-    
+
     if (file_stream_.gcount() != PAGE_SIZE) {
-        std::cerr << "Warning: Read less than expected page size" << std::endl;
+        // EOF 이후 영역은 0으로 초기화된 페이지로 취급
+        file_stream_.clear();
     }
-    
+
     return page;
 }
 // WritePage() - 데이터 저장
 bool StorageManager::WritePage(const Page& page) {
-    // 파일 포인터 이동
-    file_stream_.seekp(page.GetPageId() * PAGE_SIZE, std::ios::beg);
-    // 파일 쓰기
+    file_stream_.clear();
+    file_stream_.seekp(static_cast<std::streamoff>(page.GetPageId()) * PAGE_SIZE, std::ios::beg);
     file_stream_.write(page.GetData(), PAGE_SIZE);
-    // 파일 플러시
     file_stream_.flush();
-    // 파일 쓰기 확인
     return file_stream_.good();
 }
 
