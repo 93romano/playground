@@ -34,7 +34,35 @@ int main() {
             std::cout << "  " << record.ToString() << std::endl;
         }
     }
-    
+
+    std::cout << "\n=== Deleting Record id = 2 ===" << std::endl;
+    db.ExecuteQuery("DELETE FROM users WHERE id = 2");
+    if (db.ExecuteQuery("SELECT * FROM users")) {
+        auto results = db.GetLastResults();
+        std::cout << "After delete, found " << results.size() << " records:" << std::endl;
+        for (const auto& record : results) {
+            std::cout << "  " << record.ToString() << std::endl;
+        }
+    }
+
+    std::cout << "\n=== Bulk Insert (BTree split) ===" << std::endl;
+    db.ExecuteQuery("CREATE TABLE big (id INT, val INT)");
+    for (int i = 0; i < 50; ++i) {
+        std::string sql = "INSERT INTO big VALUES (" + std::to_string(i) + ", " +
+                          std::to_string(i * 10) + ")";
+        db.ExecuteQuery(sql);
+    }
+    if (db.ExecuteQuery("SELECT * FROM big")) {
+        auto results = db.GetLastResults();
+        std::cout << "Bulk table now contains " << results.size() << " records" << std::endl;
+    }
+    if (db.ExecuteQuery("SELECT * FROM big WHERE id = 37")) {
+        auto results = db.GetLastResults();
+        std::cout << "Lookup id=37 returned " << results.size() << " record(s)";
+        if (!results.empty()) std::cout << ": " << results[0].ToString();
+        std::cout << std::endl;
+    }
+
     std::cout << "\n=== Database Demo Complete ===" << std::endl;
     return 0;
 }

@@ -29,6 +29,7 @@ private:
 
     bool ExecuteSelect(const Query& query);
     bool ExecuteInsert(const Query& query);
+    bool ExecuteDelete(const Query& query);
     bool ExecuteCreateTable(const Query& query);
     
     bool EvaluateCondition(const Record& record, const Condition& condition, const Table& table);
