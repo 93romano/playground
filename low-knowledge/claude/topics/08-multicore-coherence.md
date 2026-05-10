@@ -22,6 +22,26 @@
 - **S (Shared)**: 여러 코어가 clean 카피
 - **I (Invalid)**: 무효
 
+```mermaid
+stateDiagram-v2
+  [*] --> I
+  I: Invalid
+  S: Shared (clean, 다중)
+  E: Exclusive (clean, 유일)
+  M: Modified (dirty, 유일)
+  I --> E: read miss<br/>(다른 코어 없음)
+  I --> S: read miss<br/>(다른 코어 보유)
+  E --> M: local write
+  E --> S: 다른 코어 read
+  S --> M: local write<br/>(다른 코어 invalidate)
+  S --> I: 다른 코어 write
+  M --> S: 다른 코어 read<br/>(write-back)
+  M --> I: 다른 코어 write<br/>(write-back)
+  E --> I: evict / invalidate
+  S --> I: evict
+  M --> I: evict (write-back)
+```
+
 상태 전이 (예시):
 ```
 코어 A read X  → A가 E (메모리에서 가져옴)
@@ -51,6 +71,23 @@
 ### Atomic 연산
 
 `atomic_compare_exchange`, `fetch_add` 등은 **하드웨어가 lock prefix(x86)** 또는 **LL/SC(ARM)** 로 구현. 단일 명령으로 read-modify-write 보장.
+
+### Memory Order — 강함 ↔ 약함 시각화
+
+```
+강함  ┌────────────────────────────────────────┐
+  ↑   │  seq_cst   모든 코어가 같은 순서로 봄     │ 비쌈
+      │  acq_rel   release-acquire 동기화         │
+      │  acquire   이 load 이후 op이 뒤따라옴      │
+      │  release   이전 op이 이 store와 함께 보임 │
+      │  consume   data dependency만             │
+  ↓   │  relaxed   순서 보장 X (atomic만 보장)    │ 빠름
+약함  └────────────────────────────────────────┘
+
+producer (코어 A)              consumer (코어 B)
+  data = 42;          ─────►    while (!ready.load(acquire));
+  ready.store(release, true);   assert(data == 42);  ✓ 보장
+```
 
 ### Memory Order (C++/Rust)
 
@@ -94,6 +131,8 @@ x.load(std::memory_order_seq_cst);       // SC — 가장 강하고 가장 비�
         │                              │
    DRAM (local)                   DRAM (local)
 ```
+
+![NUMA topology](assets/08-numa.svg)
 
 - 같은 소켓 DRAM: ~80 ns
 - 원격 소켓 DRAM: ~150 ns + 인터커넥트 BW 경쟁

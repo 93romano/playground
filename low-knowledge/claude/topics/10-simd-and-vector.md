@@ -30,6 +30,8 @@ V0~V31   (128 bit)  : NEON
 Z0~Z31   (가변)     : SVE
 ```
 
+![SIMD lanes — scalar vs AVX2 vs width comparison](assets/10-simd-lanes.svg)
+
 ### 기본 동작 예시
 
 ```c
@@ -51,6 +53,25 @@ _mm256_storeu_ps(c, vc);
 - 데이터 의존성 없음
 - 함수 호출 없음 (inline 가능 제외)
 - 부동소수점은 `-ffast-math`가 있어야 자유로운 재정렬
+
+```mermaid
+flowchart TD
+  L[for-loop 발견] --> C1{단순한<br/>증분?}
+  C1 -->|No| X[❌ 벡터화 거부]
+  C1 -->|Yes| C2{데이터<br/>의존성?}
+  C2 -->|있음<br/>a i+1 = a i ...| X
+  C2 -->|없음| C3{함수 호출?}
+  C3 -->|있음, inline 불가| X
+  C3 -->|없음/inline 가능| C4{부동소수<br/>reduction?}
+  C4 -->|Yes & no -ffast-math| X
+  C4 -->|OK| C5{메모리<br/>aliasing?}
+  C5 -->|"확실히 없음<br/>(restrict)"| V[✅ SIMD 코드 생성]
+  C5 -->|불명| X2["runtime check<br/>+ 두 버전 생성"]
+  classDef good fill:#dcfce7,stroke:#22c55e
+  classDef bad fill:#fee2e2,stroke:#ef4444
+  class V,X2 good
+  class X bad
+```
 
 ```bash
 gcc -O3 -march=native -fopt-info-vec-all -c file.c

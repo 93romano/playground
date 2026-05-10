@@ -77,6 +77,28 @@ CPU pipeline slot을 4가지로 분류:
                               Bnd Bnd     Util
 ```
 
+```mermaid
+flowchart TD
+  ROOT[모든 pipeline slot] --> A{slot 채워짐?}
+  A -->|"Yes"| B{retire 성공?}
+  A -->|No, 이유?| FE_BE[Front-end<br/>or Back-end<br/>Bound?]
+
+  B -->|Yes| RET["✅ Retiring<br/>(이상적)"]
+  B -->|No, flushed| BAD["⚠️ Bad Speculation<br/>분기 mispredict"]
+
+  FE_BE --> FE["Front-end Bound<br/>I-cache miss, 디코딩"]
+  FE_BE --> BE["Back-end Bound"]
+  BE --> MEM["Memory Bound<br/>L1/L2/L3/DRAM"]
+  BE --> CORE["Core Bound<br/>port utilization"]
+
+  classDef good fill:#dcfce7,stroke:#22c55e
+  classDef warn fill:#fef3c7,stroke:#f59e0b
+  classDef bad fill:#fee2e2,stroke:#ef4444
+  class RET good
+  class BAD,FE bad
+  class MEM,CORE warn
+```
+
 ```bash
 toplev.py --level 2 ./prog
 ```
@@ -145,6 +167,8 @@ perf script | ./stackcollapse-perf.pl | ./flamegraph.pl > out.svg
 ```
 가로 = 샘플 수, 세로 = call stack. 넓은 box를 우선 공략.
 
+![Flamegraph 예시](assets/11-flamegraph.svg)
+
 ### 3. 알고리즘 vs 마이크로옵티마이제이션
 
 - O(n²) → O(n log n) 알고리즘 변경: **수십~수만 배** 가속
@@ -153,6 +177,17 @@ perf script | ./stackcollapse-perf.pl | ./flamegraph.pl > out.svg
 - 비트 트릭, 어셈블리: **1.1~2배**
 
 → 위에서 아래로. 알고리즘 안 바꾸고 SIMD부터 들어가면 시간 낭비.
+
+```
+효과 크기 (log scale)
+    10000x ┤  ████████████████████  알고리즘 (O(n²)→O(n log n))
+     100x  ┤  ████████              데이터 레이아웃 / 캐시
+      10x  ┤  ████                  SIMD / 병렬화
+       2x  ┤  ██                    PGO/LTO/할당기 교체
+       1x  ┤  █                     비트 트릭, 어셈블리
+            └─────────────────────────────────────────►
+            우선순위: 위 → 아래
+```
 
 ### 4. Back-of-envelope
 

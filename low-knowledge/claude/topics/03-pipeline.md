@@ -18,10 +18,37 @@
 명령 4:                     IF -> ID -> EX -> MEM -> WB
 ```
 
+![Pipeline timing](assets/03-pipeline.svg)
+
+```mermaid
+flowchart LR
+  subgraph "Cycle N (concurrent stages)"
+    direction LR
+    A["IF<br/>I_n+4"] --> B["ID<br/>I_n+3"] --> C["EX<br/>I_n+2"] --> D["MEM<br/>I_n+1"] --> E["WB<br/>I_n"]
+  end
+  classDef s fill:#dbeafe,stroke:#3b82f6
+  class A,B,C,D,E s
+```
+
 - **장점**: 각 단계가 1 cycle씩 → throughput **명령어/cycle ≈ 1**
 - 실제 실행 시간: latency는 5 cycle 그대로지만, throughput이 5배
 
 ### 해저드(Hazard) 종류
+
+```mermaid
+flowchart TB
+  H[Pipeline Hazard] --> D[Data Hazard<br/>RAW/WAR/WAW]
+  H --> C[Control Hazard<br/>분기·점프]
+  H --> S[Structural Hazard<br/>자원 충돌]
+  D --> DF["forwarding/bypassing<br/>(load-use는 1 stall 불가피)"]
+  C --> CP["분기 예측<br/>+ flush on miss"]
+  S --> SP["I-cache/D-cache 분리<br/>다중 포트, 자원 복제"]
+  classDef warn fill:#fee2e2,stroke:#ef4444
+  classDef ok fill:#dcfce7,stroke:#22c55e
+  class H,D,C,S warn
+  class DF,CP,SP ok
+```
+
 
 #### 1. Data Hazard
 ```asm
@@ -52,6 +79,30 @@ beq r1, r2, label   ; 분기 → 다음 PC를 모름
 - **정적 예측**: "분기는 항상 not taken", 또는 "역방향 분기는 taken"(루프 가정)
 - **동적 예측**: 과거 결과를 기반으로 예측 (1-bit, 2-bit saturating counter)
 - 적중률 ≈ 95%+이면 합격, 90% 이하면 성능 큰 손실
+
+**2-bit saturating counter 상태 머신**
+```mermaid
+stateDiagram-v2
+  [*] --> SN
+  SN: Strongly NOT-taken (00)
+  WN: Weakly NOT-taken (01)
+  WT: Weakly Taken (10)
+  ST: Strongly Taken (11)
+  SN --> WN: taken
+  WN --> SN: not taken
+  WN --> WT: taken
+  WT --> WN: not taken
+  WT --> ST: taken
+  ST --> WT: not taken
+  ST --> ST: taken
+  SN --> SN: not taken
+  note right of ST
+    예측: TAKEN
+  end note
+  note left of SN
+    예측: NOT TAKEN
+  end note
+```
 
 ❓ **면접: "파이프라인 단계가 많으면 무조건 좋은가?"** No. 단계가 많을수록 (1) 분기 mispredict 페널티 ↑, (2) 단계 간 latch 비용 ↑, (3) 클럭 ↑하지만 IPC 떨어짐. Pentium 4는 31단계까지 갔다가 실패 → Core 아키텍쳐로 회귀.
 

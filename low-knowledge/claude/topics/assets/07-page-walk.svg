@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .lab   { font: 12px ui-monospace, monospace; fill: #111827; }
+    .va    { fill: #fde68a; stroke: #f59e0b; }
+    .l4    { fill: #fecaca; stroke: #ef4444; }
+    .l3    { fill: #fed7aa; stroke: #f97316; }
+    .l2    { fill: #d9f99d; stroke: #84cc16; }
+    .l1    { fill: #bfdbfe; stroke: #3b82f6; }
+    .pa    { fill: #ddd6fe; stroke: #8b5cf6; }
+    .arrow { stroke: #374151; stroke-width: 1.5; fill: none; }
+  </style>
+
+  <text x="20" y="26" class="title">x86-64 4-level page walk  (48-bit virtual → physical)</text>
+
+  <!-- Virtual address breakdown -->
+  <g transform="translate(20,50)">
+    <rect x="0"   y="0" width="100" height="40" class="l4"/>
+    <rect x="100" y="0" width="100" height="40" class="l3"/>
+    <rect x="200" y="0" width="100" height="40" class="l2"/>
+    <rect x="300" y="0" width="100" height="40" class="l1"/>
+    <rect x="400" y="0" width="160" height="40" class="pa"/>
+    <text x="50"  y="25" class="lab" text-anchor="middle">PML4 idx</text>
+    <text x="150" y="25" class="lab" text-anchor="middle">PDPT idx</text>
+    <text x="250" y="25" class="lab" text-anchor="middle">PD idx</text>
+    <text x="350" y="25" class="lab" text-anchor="middle">PT idx</text>
+    <text x="480" y="25" class="lab" text-anchor="middle">page offset</text>
+    <text x="50"  y="58" class="small" text-anchor="middle">9 bit</text>
+    <text x="150" y="58" class="small" text-anchor="middle">9 bit</text>
+    <text x="250" y="58" class="small" text-anchor="middle">9 bit</text>
+    <text x="350" y="58" class="small" text-anchor="middle">9 bit</text>
+    <text x="480" y="58" class="small" text-anchor="middle">12 bit (4 KB page)</text>
+  </g>
+
+  <!-- CR3 → 4-level walk -->
+  <g transform="translate(20,120)">
+    <rect width="120" height="40" fill="#f3f4f6" stroke="#374151"/>
+    <text x="60" y="25" class="lab" text-anchor="middle">CR3</text>
+  </g>
+  <line x1="140" y1="140" x2="180" y2="140" class="arrow" marker-end="url(#a4)"/>
+
+  <g transform="translate(180,120)">
+    <rect width="120" height="40" class="l4"/>
+    <text x="60" y="18" class="lab" text-anchor="middle">PML4 table</text>
+    <text x="60" y="34" class="small" text-anchor="middle">[PML4 idx] → PDPT base</text>
+  </g>
+  <line x1="300" y1="140" x2="340" y2="140" class="arrow" marker-end="url(#a4)"/>
+
+  <g transform="translate(340,120)">
+    <rect width="120" height="40" class="l3"/>
+    <text x="60" y="18" class="lab" text-anchor="middle">PDPT table</text>
+    <text x="60" y="34" class="small" text-anchor="middle">[PDPT idx] → PD base</text>
+  </g>
+  <line x1="460" y1="140" x2="500" y2="140" class="arrow" marker-end="url(#a4)"/>
+
+  <g transform="translate(500,120)">
+    <rect width="120" height="40" class="l2"/>
+    <text x="60" y="18" class="lab" text-anchor="middle">PD table</text>
+    <text x="60" y="34" class="small" text-anchor="middle">[PD idx] → PT base</text>
+  </g>
+  <line x1="620" y1="140" x2="660" y2="140" class="arrow" marker-end="url(#a4)"/>
+
+  <g transform="translate(660,120)">
+    <rect width="120" height="40" class="l1"/>
+    <text x="60" y="18" class="lab" text-anchor="middle">PT table</text>
+    <text x="60" y="34" class="small" text-anchor="middle">[PT idx] → PFN</text>
+  </g>
+
+  <!-- Final -->
+  <line x1="720" y1="160" x2="720" y2="200" class="arrow" marker-end="url(#a4)"/>
+  <g transform="translate(620,200)">
+    <rect width="160" height="40" class="pa"/>
+    <text x="80" y="18" class="lab" text-anchor="middle">Physical Address</text>
+    <text x="80" y="34" class="small" text-anchor="middle">PFN || page offset</text>
+  </g>
+
+  <!-- TLB -->
+  <text x="20" y="290" class="title">TLB shortcut — 변환 캐싱</text>
+  <g transform="translate(20,300)">
+    <rect width="220" height="60" fill="#dcfce7" stroke="#22c55e"/>
+    <text x="110" y="22" class="lab" text-anchor="middle">TLB hit  (~0 cycle)</text>
+    <text x="110" y="40" class="small" text-anchor="middle">VPN → PFN 직접 매칭</text>
+    <text x="110" y="56" class="small" text-anchor="middle">L1 TLB ~ 64 / L2 TLB ~ 1500 entry</text>
+  </g>
+  <g transform="translate(260,300)">
+    <rect width="280" height="60" fill="#fee2e2" stroke="#ef4444"/>
+    <text x="140" y="22" class="lab" text-anchor="middle">TLB miss → page walk (수십 cycle)</text>
+    <text x="140" y="40" class="small" text-anchor="middle">하드웨어 page walker가 4번 메모리 접근</text>
+    <text x="140" y="56" class="small" text-anchor="middle">중간 단계는 Page Walker Cache로 단축</text>
+  </g>
+  <g transform="translate(560,300)">
+    <rect width="220" height="60" fill="#fef3c7" stroke="#f59e0b"/>
+    <text x="110" y="22" class="lab" text-anchor="middle">Page Fault</text>
+    <text x="110" y="40" class="small" text-anchor="middle">매핑 없음 → 커널 진입</text>
+    <text x="110" y="56" class="small" text-anchor="middle">minor / major / segfault</text>
+  </g>
+
+  <!-- Huge page -->
+  <text x="20" y="400" class="title">Huge Page — 페이지 크기를 키워 walk 단축</text>
+  <g transform="translate(20,410)" class="small">
+    <text y="14"><tspan font-weight="600">4 KB (기본)</tspan>   4-level walk, TLB 1 entry = 4 KB 커버</text>
+    <text y="32"><tspan font-weight="600">2 MB (PMD)</tspan>     3-level (PT 생략), TLB 1 entry = 2 MB → DB/JVM heap에 유리</text>
+    <text y="50"><tspan font-weight="600">1 GB (PUD)</tspan>     2-level, TLB 1 entry = 1 GB → HPC, 대형 인메모리</text>
+  </g>
+
+  <defs>
+    <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#374151"/>
+    </marker>
+  </defs>
+</svg>

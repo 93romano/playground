@@ -8,6 +8,8 @@
 
 ## 기초 (면접/CS)
 
+![Memory hierarchy pyramid](assets/05-memory-pyramid.svg)
+
 ### 메모리 계층 비교 (현대 데스크탑 기준)
 
 | 계층 | 지연 | 용량 | 비고 |
@@ -56,6 +58,18 @@ for (i = 0; i < N; i++) sum += a[i * 1024];
 
 ```
 DIMM → Rank → Bank → Row → Column
+```
+
+```mermaid
+flowchart LR
+  R[Memory<br/>Request] --> A{같은 row<br/>이미 열림?}
+  A -->|"Yes (row hit)"| CAS[Column Read<br/>~15 ns] --> Done[Data]
+  A -->|No, row 닫힘| RAS["Row Activation<br/>(RAS) ~15 ns"] --> CAS
+  A -->|No, 다른 row 열림| PRE["Precharge<br/>~15 ns"] --> RAS2[Row Activation] --> CAS2[Column Read] --> Done
+  classDef hit fill:#dcfce7,stroke:#22c55e
+  classDef miss fill:#fee2e2,stroke:#ef4444
+  class CAS,Done hit
+  class RAS,PRE,RAS2,CAS2 miss
 ```
 
 1. **Row Activation (RAS)**: row 전체를 row buffer로 복사 (~15 ns)
@@ -111,6 +125,20 @@ OoO + 큰 LSU + non-blocking cache 덕에 동시에 여러 메모리 요청 infl
 → 핫 데이터 구조의 크기를 측정하고, L1/L2에 맞게 chunking 하는 게 cache-blocking의 본질.
 
 ### 2. AoS vs SoA
+
+**캐시 라인 활용도 (한 라인 = 64 byte) 시각화**
+```
+AoS — struct Particle {x,y,z,vx,vy,vz,m} (28 byte)
+   라인 1: [x0 y0 z0 vx0 vy0 vz0 m0  x1 y1 z1 ...]
+            ▓▓                   ← x만 쓸 때 해치 채워진 부분만 유효
+                                    나머지 ~75% 캐시 낭비
+
+SoA — float x[N]; float y[N]; ...
+   라인 1: [x0 x1 x2 x3 x4 x5 x6 x7 x8 x9 x10 x11 ...]
+            ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+                                    100% 활용 → SIMD에도 친화적
+```
+
 
 ```c
 // Array of Structs - 모든 필드 같이 적재 → 안 쓰는 필드도 캐시 잡아먹음

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .byte  { font: 14px ui-monospace, monospace; fill: #111827; }
+    .addr  { font: 11px ui-monospace, monospace; fill: #6b7280; }
+    .b1 { fill: #fef3c7; stroke: #f59e0b; }
+    .b2 { fill: #dbeafe; stroke: #3b82f6; }
+    .b3 { fill: #dcfce7; stroke: #22c55e; }
+    .b4 { fill: #fce7f3; stroke: #ec4899; }
+  </style>
+
+  <text x="20" y="26" class="title">value = 0x12345678  (4-byte integer)</text>
+  <text x="20" y="46" class="small">stored at memory address +0..+3</text>
+
+  <!-- Little-endian -->
+  <g transform="translate(20,80)">
+    <text x="0" y="0" class="title">Little-endian  (x86 / ARM / RISC-V)</text>
+    <text x="0" y="20" class="small">least-significant byte first</text>
+    <g transform="translate(0,30)">
+      <rect x="0"   y="0" width="100" height="60" class="b4"/>
+      <rect x="100" y="0" width="100" height="60" class="b3"/>
+      <rect x="200" y="0" width="100" height="60" class="b2"/>
+      <rect x="300" y="0" width="100" height="60" class="b1"/>
+      <text x="50"  y="36" text-anchor="middle" class="byte">0x78</text>
+      <text x="150" y="36" text-anchor="middle" class="byte">0x56</text>
+      <text x="250" y="36" text-anchor="middle" class="byte">0x34</text>
+      <text x="350" y="36" text-anchor="middle" class="byte">0x12</text>
+      <text x="50"  y="78" text-anchor="middle" class="addr">addr+0</text>
+      <text x="150" y="78" text-anchor="middle" class="addr">addr+1</text>
+      <text x="250" y="78" text-anchor="middle" class="addr">addr+2</text>
+      <text x="350" y="78" text-anchor="middle" class="addr">addr+3</text>
+    </g>
+  </g>
+
+  <!-- Big-endian -->
+  <g transform="translate(20,210)">
+    <text x="0" y="0" class="title">Big-endian  (network byte order, old PowerPC/SPARC)</text>
+    <text x="0" y="20" class="small">most-significant byte first</text>
+    <g transform="translate(0,30)">
+      <rect x="0"   y="0" width="100" height="60" class="b1"/>
+      <rect x="100" y="0" width="100" height="60" class="b2"/>
+      <rect x="200" y="0" width="100" height="60" class="b3"/>
+      <rect x="300" y="0" width="100" height="60" class="b4"/>
+      <text x="50"  y="36" text-anchor="middle" class="byte">0x12</text>
+      <text x="150" y="36" text-anchor="middle" class="byte">0x34</text>
+      <text x="250" y="36" text-anchor="middle" class="byte">0x56</text>
+      <text x="350" y="36" text-anchor="middle" class="byte">0x78</text>
+      <text x="50"  y="78" text-anchor="middle" class="addr">addr+0</text>
+      <text x="150" y="78" text-anchor="middle" class="addr">addr+1</text>
+      <text x="250" y="78" text-anchor="middle" class="addr">addr+2</text>
+      <text x="350" y="78" text-anchor="middle" class="addr">addr+3</text>
+    </g>
+  </g>
+</svg>

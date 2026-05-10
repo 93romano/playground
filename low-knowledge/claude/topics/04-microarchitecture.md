@@ -22,6 +22,17 @@ mul  r5, r2, r6
 ```
 순서를 바꿔도 결과가 같으면 먼저 실행. **메모리 latency를 다른 일로 가린다(memory level parallelism).**
 
+```
+시간 →
+in-order:    [load────────100cy────][add][mul]
+                                       ↑ 100+1+3 cycle = 104
+
+out-of-order: [load────────100cy────]
+              [add]                       ← load와 병렬 진행
+                  [mul]                   ← add 결과 의존, 즉시
+                                       ↑ 100 cycle (latency 가려짐)
+```
+
 ### Speculative Execution
 
 분기 예측 결과를 기반으로 **결과가 확정되기 전에 미리 실행**.
@@ -64,6 +75,39 @@ r8    ← r1_v2 + r9 ; (4)
                                                                                     ↓
                                                                           architecturally visible
 ```
+
+```mermaid
+flowchart LR
+  subgraph FE["Front-end (in-order)"]
+    direction LR
+    F[Fetch + BPU] --> D[Decode → μop]
+    D --> R[Rename<br/>RAT]
+    R --> DI[Dispatch]
+  end
+  subgraph BE["Back-end (out-of-order)"]
+    direction LR
+    IQ[Issue Queue<br/>Scheduler] --> EX1[ALU 0]
+    IQ --> EX2[ALU 1]
+    IQ --> EX3[FPU/SIMD]
+    IQ --> LSU[LSU<br/>Load/Store]
+  end
+  subgraph RT["Retire (in-order)"]
+    ROB[ROB] --> ARF[Arch Reg File<br/>Memory commit]
+  end
+  DI --> IQ
+  EX1 --> ROB
+  EX2 --> ROB
+  EX3 --> ROB
+  LSU --> ROB
+  classDef fe fill:#dbeafe,stroke:#3b82f6
+  classDef be fill:#fde68a,stroke:#f59e0b
+  classDef rt fill:#dcfce7,stroke:#22c55e
+  class F,D,R,DI fe
+  class IQ,EX1,EX2,EX3,LSU be
+  class ROB,ARF rt
+```
+
+![Register renaming](assets/04-register-renaming.svg)
 
 ### 핵심 구조물
 

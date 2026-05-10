@@ -37,7 +37,49 @@ while (!(*status_reg & READY)) ;   // 비지 웨이트
 4. EOI 신호 → 인터럽트 종료 → 사용자 모드 복귀
 ```
 
+```mermaid
+sequenceDiagram
+  autonumber
+  participant Dev as Device (NIC/NVMe)
+  participant IC  as Interrupt Controller<br/>(APIC/GIC)
+  participant CPU
+  participant ISR as ISR (top half)
+  participant BH  as bottom half<br/>(softirq/workqueue)
+  participant App as Userspace
+
+  Dev->>IC: IRQ raise (or MSI write)
+  IC->>CPU: vector signal
+  CPU->>CPU: 현재 명령 완료, 레지스터 save<br/>커널 모드 진입
+  CPU->>ISR: jump to vector
+  ISR->>Dev: status read, ack
+  ISR->>BH: defer 긴 작업
+  ISR->>IC: EOI
+  CPU->>App: 사용자 모드 복귀
+  BH-->>App: wakeup (poll/epoll/io_uring)
+```
+
 ### DMA (Direct Memory Access)
+
+```mermaid
+flowchart LR
+  subgraph "Without DMA (PIO)"
+    direction LR
+    D1[Device] -->|byte-by-byte| C1[CPU 100% 점유]
+    C1 --> M1[Memory]
+  end
+  subgraph "With DMA"
+    direction LR
+    CPU2[CPU<br/>setup만] -->|descriptor| DMA[DMA Controller]
+    DMA -->|bulk transfer<br/>CPU 우회| M2[Memory]
+    Dev2[Device] -->|data| DMA
+    DMA -.->|"완료 인터럽트"| CPU2
+  end
+  classDef bad fill:#fee2e2,stroke:#ef4444
+  classDef good fill:#dcfce7,stroke:#22c55e
+  class C1 bad
+  class CPU2,DMA good
+```
+
 
 CPU 개입 없이 디바이스가 직접 메모리에 read/write.
 ```
@@ -94,6 +136,8 @@ DMA: 디바이스 → 메모리 (DMA controller)         [CPU는 시작/완료�
 - syscall 거의 없이 비동기 I/O
 - polling 모드: 완전 syscall-free 가능
 - DPDK/SPDK가 했던 것을 OS 차원에서
+
+![io_uring shared ring buffers](assets/09-io-uring.svg)
 
 ### DPDK / SPDK / Kernel Bypass
 

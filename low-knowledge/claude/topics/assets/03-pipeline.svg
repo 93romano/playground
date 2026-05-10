@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 320" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .stage { font: 13px ui-monospace, monospace; fill: #111827; text-anchor: middle; }
+    .lab   { font: 12px sans-serif; fill: #374151; }
+    .if   { fill: #fde68a; stroke: #f59e0b; }
+    .id   { fill: #fca5a5; stroke: #ef4444; }
+    .ex   { fill: #93c5fd; stroke: #3b82f6; }
+    .mem  { fill: #86efac; stroke: #22c55e; }
+    .wb   { fill: #c4b5fd; stroke: #8b5cf6; }
+    .stall { fill: #f3f4f6; stroke: #9ca3af; stroke-dasharray: 4 3; }
+  </style>
+
+  <text x="20" y="26" class="title">5-stage MIPS pipeline — ideal vs. with hazard</text>
+
+  <g transform="translate(20,50)">
+    <text x="0" y="14" class="small">cycle:</text>
+    <g font-size="11" fill="#6b7280" text-anchor="middle">
+      <text x="120" y="14">1</text><text x="180" y="14">2</text><text x="240" y="14">3</text>
+      <text x="300" y="14">4</text><text x="360" y="14">5</text><text x="420" y="14">6</text>
+      <text x="480" y="14">7</text><text x="540" y="14">8</text><text x="600" y="14">9</text>
+    </g>
+
+    <text x="0"  y="48" class="lab">I1  add</text>
+    <rect x="90"  y="30" width="60" height="24" class="if"/>
+    <rect x="150" y="30" width="60" height="24" class="id"/>
+    <rect x="210" y="30" width="60" height="24" class="ex"/>
+    <rect x="270" y="30" width="60" height="24" class="mem"/>
+    <rect x="330" y="30" width="60" height="24" class="wb"/>
+    <text x="120" y="46" class="stage">IF</text><text x="180" y="46" class="stage">ID</text>
+    <text x="240" y="46" class="stage">EX</text><text x="300" y="46" class="stage">MEM</text>
+    <text x="360" y="46" class="stage">WB</text>
+
+    <text x="0"  y="78" class="lab">I2  sub</text>
+    <rect x="150" y="60" width="60" height="24" class="if"/>
+    <rect x="210" y="60" width="60" height="24" class="id"/>
+    <rect x="270" y="60" width="60" height="24" class="ex"/>
+    <rect x="330" y="60" width="60" height="24" class="mem"/>
+    <rect x="390" y="60" width="60" height="24" class="wb"/>
+
+    <text x="0"  y="108" class="lab">I3  and</text>
+    <rect x="210" y="90" width="60" height="24" class="if"/>
+    <rect x="270" y="90" width="60" height="24" class="id"/>
+    <rect x="330" y="90" width="60" height="24" class="ex"/>
+    <rect x="390" y="90" width="60" height="24" class="mem"/>
+    <rect x="450" y="90" width="60" height="24" class="wb"/>
+
+    <text x="0"  y="138" class="lab">I4  or</text>
+    <rect x="270" y="120" width="60" height="24" class="if"/>
+    <rect x="330" y="120" width="60" height="24" class="id"/>
+    <rect x="390" y="120" width="60" height="24" class="ex"/>
+    <rect x="450" y="120" width="60" height="24" class="mem"/>
+    <rect x="510" y="120" width="60" height="24" class="wb"/>
+  </g>
+
+  <text x="20" y="210" class="title">load-use hazard → 1-cycle stall (bubble)</text>
+
+  <g transform="translate(20,220)">
+    <text x="0" y="20" class="lab">lw r1</text>
+    <rect x="90"  y="6"  width="60" height="24" class="if"/>
+    <rect x="150" y="6"  width="60" height="24" class="id"/>
+    <rect x="210" y="6"  width="60" height="24" class="ex"/>
+    <rect x="270" y="6"  width="60" height="24" class="mem"/>
+    <rect x="330" y="6"  width="60" height="24" class="wb"/>
+
+    <text x="0" y="50" class="lab">add r1+</text>
+    <rect x="150" y="36" width="60" height="24" class="if"/>
+    <rect x="210" y="36" width="60" height="24" class="id"/>
+    <rect x="270" y="36" width="60" height="24" class="stall"/>
+    <text x="300" y="52" class="stage" fill="#6b7280">stall</text>
+    <rect x="330" y="36" width="60" height="24" class="ex"/>
+    <rect x="390" y="36" width="60" height="24" class="mem"/>
+    <rect x="450" y="36" width="60" height="24" class="wb"/>
+
+    <line x1="300" y1="30" x2="240" y2="36" stroke="#22c55e" stroke-width="2" marker-end="url(#fwd)"/>
+    <text x="240" y="22" class="small" fill="#22c55e">forwarding still needs 1 bubble</text>
+  </g>
+
+  <defs>
+    <marker id="fwd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#22c55e"/>
+    </marker>
+  </defs>
+</svg>

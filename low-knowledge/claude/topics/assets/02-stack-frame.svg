@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 460" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .lab   { font: 13px ui-monospace, monospace; fill: #111827; }
+    .arrow { font: 12px sans-serif; fill: #6b7280; }
+    .args  { fill: #fef3c7; stroke: #f59e0b; }
+    .ret   { fill: #fecaca; stroke: #ef4444; }
+    .rbp   { fill: #ddd6fe; stroke: #8b5cf6; }
+    .local { fill: #dbeafe; stroke: #3b82f6; }
+    .pad   { fill: #e5e7eb; stroke: #6b7280; stroke-dasharray: 4 4; }
+  </style>
+
+  <text x="20" y="26" class="title">Stack frame  (System V x86-64, function entry layout)</text>
+  <text x="20" y="46" class="small">stack grows downward — high address at top, RSP at bottom</text>
+
+  <text x="540" y="80" class="arrow">↑ HIGH ADDRESS</text>
+
+  <g transform="translate(160,80)">
+    <rect width="360" height="50" class="args"/>
+    <text x="180" y="30" text-anchor="middle" class="lab">caller-passed args (7th+, on stack)</text>
+  </g>
+  <g transform="translate(160,130)">
+    <rect width="360" height="40" class="ret"/>
+    <text x="180" y="26" text-anchor="middle" class="lab">return address  (pushed by CALL)</text>
+  </g>
+  <g transform="translate(160,170)">
+    <rect width="360" height="40" class="rbp"/>
+    <text x="180" y="26" text-anchor="middle" class="lab">saved RBP  (push rbp; mov rbp, rsp)</text>
+  </g>
+  <g transform="translate(160,210)">
+    <rect width="360" height="80" class="local"/>
+    <text x="180" y="38" text-anchor="middle" class="lab">local variables</text>
+    <text x="180" y="60" text-anchor="middle" class="small">+ callee-saved register spills</text>
+  </g>
+  <g transform="translate(160,290)">
+    <rect width="360" height="40" class="pad"/>
+    <text x="180" y="26" text-anchor="middle" class="lab">alignment padding (16-byte align)</text>
+  </g>
+  <g transform="translate(160,330)">
+    <rect width="360" height="50" class="args"/>
+    <text x="180" y="30" text-anchor="middle" class="lab">outgoing args for next callee</text>
+  </g>
+
+  <text x="540" y="395" class="arrow">↓ LOW ADDRESS</text>
+
+  <line x1="40" y1="170" x2="155" y2="190" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#a1)"/>
+  <text x="20" y="165" class="small">RBP →</text>
+  <line x1="40" y1="370" x2="155" y2="355" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#a1)"/>
+  <text x="20" y="375" class="small">RSP →</text>
+
+  <defs>
+    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#374151"/>
+    </marker>
+  </defs>
+
+  <text x="20" y="430" class="small">Caller-saved (volatile): RAX, RCX, RDX, RSI, RDI, R8–R11    │    Callee-saved: RBX, RBP, R12–R15</text>
+</svg>

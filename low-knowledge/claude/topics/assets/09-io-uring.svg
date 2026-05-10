@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .lab   { font: 12px ui-monospace, monospace; fill: #111827; text-anchor:middle; }
+    .user   { fill: #fef3c7; stroke: #f59e0b; }
+    .kernel { fill: #ddd6fe; stroke: #8b5cf6; }
+    .sq     { fill: #bfdbfe; stroke: #3b82f6; }
+    .cq     { fill: #bbf7d0; stroke: #22c55e; }
+    .arrow  { stroke: #374151; stroke-width: 1.5; fill: none; }
+  </style>
+
+  <text x="20" y="26" class="title">io_uring — userspace ↔ kernel shared ring buffers</text>
+
+  <!-- User space -->
+  <g transform="translate(40,60)">
+    <rect width="320" height="280" class="user"/>
+    <text x="160" y="22" class="title" text-anchor="middle">Userspace (application)</text>
+
+    <text x="20" y="60" class="small">1. Submission Queue 작성</text>
+    <g transform="translate(20,70)">
+      <rect width="280" height="90" class="sq"/>
+      <text x="140" y="22" class="lab">SQ (mmaped, shared)</text>
+      <line x1="0" y1="40" x2="280" y2="40" stroke="#374151" stroke-dasharray="3 3"/>
+      <text x="20" y="60" class="lab" text-anchor="start">SQE: read fd=5 buf=...</text>
+      <text x="20" y="76" class="lab" text-anchor="start">SQE: write fd=8 buf=...</text>
+    </g>
+
+    <text x="20" y="200" class="small">3. Completion 폴링</text>
+    <g transform="translate(20,210)">
+      <rect width="280" height="60" class="cq"/>
+      <text x="140" y="22" class="lab">CQ (mmaped, shared)</text>
+      <line x1="0" y1="30" x2="280" y2="30" stroke="#374151" stroke-dasharray="3 3"/>
+      <text x="20" y="50" class="lab" text-anchor="start">CQE: result=128 user_data=...</text>
+    </g>
+  </g>
+
+  <!-- Kernel -->
+  <g transform="translate(440,60)">
+    <rect width="320" height="280" class="kernel"/>
+    <text x="160" y="22" class="title" text-anchor="middle">Kernel</text>
+
+    <g transform="translate(20,60)">
+      <rect width="280" height="40" class="sq"/>
+      <text x="140" y="25" class="lab">SQ poll thread (read SQE)</text>
+    </g>
+
+    <g transform="translate(20,120)">
+      <rect width="280" height="60" fill="#fef3c7" stroke="#f59e0b"/>
+      <text x="140" y="25" class="lab">execute I/O (block / net / nvme)</text>
+      <text x="140" y="45" class="small" text-anchor="middle">submit DMA, await completion</text>
+    </g>
+
+    <g transform="translate(20,200)">
+      <rect width="280" height="40" class="cq"/>
+      <text x="140" y="25" class="lab">post CQE</text>
+    </g>
+  </g>
+
+  <!-- Arrows -->
+  <line x1="320" y1="115" x2="460" y2="80"  class="arrow" marker-end="url(#a5)"/>
+  <text x="390" y="100" class="small" text-anchor="middle">io_uring_enter (or polled)</text>
+  <line x1="460" y1="220" x2="320" y2="240" class="arrow" marker-end="url(#a5)"/>
+  <text x="390" y="245" class="small" text-anchor="middle">CQE 직접 mmap, syscall 없음</text>
+
+  <text x="20" y="380" class="small">→ batch + async + poll mode 로 syscall 거의 0. DPDK/SPDK 수준 throughput을 OS 차원에서.</text>
+
+  <defs>
+    <marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#374151"/>
+    </marker>
+  </defs>
+</svg>

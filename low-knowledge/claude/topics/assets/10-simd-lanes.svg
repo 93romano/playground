@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .lab   { font: 12px ui-monospace, monospace; fill: #111827; text-anchor:middle; }
+    .a     { fill: #fde68a; stroke: #f59e0b; }
+    .b     { fill: #bfdbfe; stroke: #3b82f6; }
+    .c     { fill: #bbf7d0; stroke: #22c55e; }
+    .reg   { fill: #f9fafb; stroke: #374151; }
+  </style>
+
+  <text x="20" y="26" class="title">SIMD = Single Instruction, Multiple Data — vector lanes</text>
+
+  <!-- Scalar baseline -->
+  <text x="20" y="60" class="title">Scalar  (1 element / instruction)</text>
+  <g transform="translate(20,76)">
+    <rect width="60" height="40" class="a"/><text x="30" y="25" class="lab">a[0]</text>
+    <text x="80" y="25" font-size="20" fill="#374151">+</text>
+    <rect x="100" y="0" width="60" height="40" class="b"/><text x="130" y="25" class="lab">b[0]</text>
+    <text x="180" y="25" font-size="20" fill="#374151">=</text>
+    <rect x="210" y="0" width="60" height="40" class="c"/><text x="240" y="25" class="lab">c[0]</text>
+    <text x="290" y="25" class="small">→ N개 처리하려면 N cycle</text>
+  </g>
+
+  <!-- AVX2 256-bit -->
+  <text x="20" y="160" class="title">AVX2 (256-bit) — 8 × float / instruction</text>
+  <g transform="translate(20,176)">
+    <rect width="480" height="36" class="a"/>
+    <line x1="60"  y1="0" x2="60"  y2="36" stroke="#f59e0b"/>
+    <line x1="120" y1="0" x2="120" y2="36" stroke="#f59e0b"/>
+    <line x1="180" y1="0" x2="180" y2="36" stroke="#f59e0b"/>
+    <line x1="240" y1="0" x2="240" y2="36" stroke="#f59e0b"/>
+    <line x1="300" y1="0" x2="300" y2="36" stroke="#f59e0b"/>
+    <line x1="360" y1="0" x2="360" y2="36" stroke="#f59e0b"/>
+    <line x1="420" y1="0" x2="420" y2="36" stroke="#f59e0b"/>
+    <text x="30"  y="22" class="lab">a0</text><text x="90"  y="22" class="lab">a1</text>
+    <text x="150" y="22" class="lab">a2</text><text x="210" y="22" class="lab">a3</text>
+    <text x="270" y="22" class="lab">a4</text><text x="330" y="22" class="lab">a5</text>
+    <text x="390" y="22" class="lab">a6</text><text x="450" y="22" class="lab">a7</text>
+    <text x="540" y="22" class="lab" text-anchor="start">YMM0</text>
+  </g>
+  <text x="510" y="200" class="lab" font-size="20">+</text>
+  <g transform="translate(20,220)">
+    <rect width="480" height="36" class="b"/>
+    <line x1="60"  y1="0" x2="60"  y2="36" stroke="#3b82f6"/>
+    <line x1="120" y1="0" x2="120" y2="36" stroke="#3b82f6"/>
+    <line x1="180" y1="0" x2="180" y2="36" stroke="#3b82f6"/>
+    <line x1="240" y1="0" x2="240" y2="36" stroke="#3b82f6"/>
+    <line x1="300" y1="0" x2="300" y2="36" stroke="#3b82f6"/>
+    <line x1="360" y1="0" x2="360" y2="36" stroke="#3b82f6"/>
+    <line x1="420" y1="0" x2="420" y2="36" stroke="#3b82f6"/>
+    <text x="30"  y="22" class="lab">b0</text><text x="90"  y="22" class="lab">b1</text>
+    <text x="150" y="22" class="lab">b2</text><text x="210" y="22" class="lab">b3</text>
+    <text x="270" y="22" class="lab">b4</text><text x="330" y="22" class="lab">b5</text>
+    <text x="390" y="22" class="lab">b6</text><text x="450" y="22" class="lab">b7</text>
+    <text x="540" y="22" class="lab" text-anchor="start">YMM1</text>
+  </g>
+  <text x="510" y="244" class="lab" font-size="20">=</text>
+  <g transform="translate(20,264)">
+    <rect width="480" height="36" class="c"/>
+    <line x1="60"  y1="0" x2="60"  y2="36" stroke="#22c55e"/>
+    <line x1="120" y1="0" x2="120" y2="36" stroke="#22c55e"/>
+    <line x1="180" y1="0" x2="180" y2="36" stroke="#22c55e"/>
+    <line x1="240" y1="0" x2="240" y2="36" stroke="#22c55e"/>
+    <line x1="300" y1="0" x2="300" y2="36" stroke="#22c55e"/>
+    <line x1="360" y1="0" x2="360" y2="36" stroke="#22c55e"/>
+    <line x1="420" y1="0" x2="420" y2="36" stroke="#22c55e"/>
+    <text x="30"  y="22" class="lab">c0</text><text x="90"  y="22" class="lab">c1</text>
+    <text x="150" y="22" class="lab">c2</text><text x="210" y="22" class="lab">c3</text>
+    <text x="270" y="22" class="lab">c4</text><text x="330" y="22" class="lab">c5</text>
+    <text x="390" y="22" class="lab">c6</text><text x="450" y="22" class="lab">c7</text>
+    <text x="540" y="22" class="lab" text-anchor="start">YMM2</text>
+  </g>
+  <text x="20" y="320" class="small">→ 8개 동시 처리, 1 cycle. FMA까지 쓰면 16 FLOPS/cycle.</text>
+
+  <!-- Width comparison -->
+  <text x="20" y="360" class="title">벡터 폭 비교</text>
+  <g transform="translate(20,372)">
+    <rect width="120" height="30" class="reg"/>
+    <text x="60" y="20" class="lab">SSE/NEON 128b (4 fp)</text>
+    <rect x="0" y="38" width="240" height="30" class="reg"/>
+    <text x="120" y="58" class="lab">AVX/AVX2 256b (8 fp)</text>
+    <rect x="0" y="76" width="480" height="30" class="reg"/>
+    <text x="240" y="96" class="lab">AVX-512  512b (16 fp)</text>
+  </g>
+</svg>

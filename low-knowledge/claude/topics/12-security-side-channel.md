@@ -28,6 +28,20 @@ return diff == 0;
 
 ### 캐시 사이드채널
 
+```mermaid
+flowchart LR
+  Vic[피해자<br/>비밀 키 사용] -.->|"부수 효과"| MA[μarch 상태<br/>캐시·BTB·TLB]
+  MA -.->|"timing"| Att[공격자<br/>측정]
+  Att -->|"한 비트 추출"| LOOP[반복]
+  LOOP --> Vic
+  classDef vic fill:#dcfce7,stroke:#22c55e
+  classDef mid fill:#fef3c7,stroke:#f59e0b
+  classDef att fill:#fee2e2,stroke:#ef4444
+  class Vic vic
+  class MA mid
+  class Att,LOOP att
+```
+
 #### Flush+Reload
 1. 공격자가 공유 라이브러리 코드 라인을 캐시에서 flush (`clflush`)
 2. 피해자가 동작
@@ -60,6 +74,29 @@ if (x < array1_size) {       // 공격자가 일부러 mistrain → 분기예측
 }
 ```
 → 비밀 메모리를 캐시 패턴으로 누출.
+
+![Spectre v1 attack flow](assets/12-spectre.svg)
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant Atk as 공격자
+  participant BPU as 분기 예측기
+  participant Spec as 투기 실행
+  participant Cache as 캐시
+  participant Mem as 비밀 메모리
+
+  Atk->>BPU: x &lt; size 반복 호출 (training)
+  BPU->>BPU: "taken" 학습
+  Atk->>BPU: x = OUT_OF_BOUNDS 호출
+  BPU->>Spec: 예측: taken → if 본문 투기 실행
+  Spec->>Mem: array1[x] 읽음 = secret
+  Spec->>Cache: array2[secret * 256] fetch
+  BPU-->>Spec: 분기 진짜 결과 도착 → rollback
+  Note over Cache: 캐시 상태는 그대로 남음 ⚠️
+  Atk->>Cache: array2[i*256] 256번 측정 (Flush+Reload)
+  Cache-->>Atk: timing 차이 → secret 추출
+```
 
 #### Spectre v2 — Branch Target Injection
 간접 분기의 BTB를 mistrain → 다른 컨텍스트의 코드 gadget을 투기 실행.

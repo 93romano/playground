@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 280" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .label { font: 600 13px sans-serif; fill: #1f2937; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .bit   { font: 12px ui-monospace, monospace; fill: #111827; }
+    .sign  { fill: #fee2e2; stroke: #ef4444; }
+    .exp   { fill: #dbeafe; stroke: #3b82f6; }
+    .frac  { fill: #dcfce7; stroke: #22c55e; }
+    .formula { font: 14px sans-serif; fill: #111827; }
+  </style>
+
+  <text x="20" y="28" class="label">IEEE 754 — float32 (32-bit)</text>
+  <text x="20" y="46" class="small">value = (-1)^sign × 1.fraction × 2^(exponent − 127)</text>
+
+  <!-- float32 -->
+  <g transform="translate(20,60)">
+    <rect x="0"   y="0" width="22"  height="40" class="sign"/>
+    <rect x="22"  y="0" width="176" height="40" class="exp"/>
+    <rect x="198" y="0" width="506" height="40" class="frac"/>
+    <text x="11"  y="25" class="bit" text-anchor="middle">S</text>
+    <text x="110" y="25" class="bit" text-anchor="middle">EEEEEEEE  (8 bits)</text>
+    <text x="451" y="25" class="bit" text-anchor="middle">FFFFFFFF FFFFFFFF FFFFFFF  (23 bits)</text>
+    <text x="11"  y="58" class="small" text-anchor="middle">31</text>
+    <text x="110" y="58" class="small" text-anchor="middle">30 .. 23</text>
+    <text x="451" y="58" class="small" text-anchor="middle">22 .. 0</text>
+  </g>
+
+  <text x="20" y="148" class="label">IEEE 754 — float64 (64-bit)</text>
+  <g transform="translate(20,160)">
+    <rect x="0"   y="0" width="11"  height="40" class="sign"/>
+    <rect x="11"  y="0" width="121" height="40" class="exp"/>
+    <rect x="132" y="0" width="572" height="40" class="frac"/>
+    <text x="6"   y="25" class="bit" text-anchor="middle">S</text>
+    <text x="71"  y="25" class="bit" text-anchor="middle">exponent (11)</text>
+    <text x="418" y="25" class="bit" text-anchor="middle">fraction (52 bits)</text>
+    <text x="6"   y="58" class="small" text-anchor="middle">63</text>
+    <text x="71"  y="58" class="small" text-anchor="middle">62 .. 52</text>
+    <text x="418" y="58" class="small" text-anchor="middle">51 .. 0</text>
+  </g>
+
+  <g transform="translate(20,238)">
+    <rect width="14" height="14" class="sign"/>
+    <text x="20"  y="12" class="small">sign</text>
+    <rect x="70"  width="14" height="14" class="exp"/>
+    <text x="90"  y="12" class="small">exponent (bias-encoded)</text>
+    <rect x="260" width="14" height="14" class="frac"/>
+    <text x="280" y="12" class="small">fraction (mantissa, hidden leading 1)</text>
+  </g>
+</svg>

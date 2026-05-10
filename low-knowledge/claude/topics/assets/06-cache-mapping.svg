@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 520" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .lab   { font: 12px ui-monospace, monospace; fill: #111827; text-anchor:middle; }
+    .tag    { fill: #fee2e2; stroke: #ef4444; }
+    .index  { fill: #fef3c7; stroke: #f59e0b; }
+    .offset { fill: #dbeafe; stroke: #3b82f6; }
+    .way    { fill: #dcfce7; stroke: #22c55e; }
+    .empty  { fill: #f9fafb; stroke: #d1d5db; }
+  </style>
+
+  <text x="20" y="26" class="title">Cache address breakdown — Set-Associative</text>
+
+  <g transform="translate(20,50)">
+    <rect x="0"   y="0" width="240" height="40" class="tag"/>
+    <rect x="240" y="0" width="200" height="40" class="index"/>
+    <rect x="440" y="0" width="160" height="40" class="offset"/>
+    <text x="120" y="25" class="lab">TAG  (high bits)</text>
+    <text x="340" y="25" class="lab">INDEX  (set 결정)</text>
+    <text x="520" y="25" class="lab">OFFSET (라인 내)</text>
+    <text x="120" y="58" class="small" text-anchor="middle">→ way 비교 후 hit 결정</text>
+    <text x="340" y="58" class="small" text-anchor="middle">→ 1개 set 선택</text>
+    <text x="520" y="58" class="small" text-anchor="middle">log2(64) = 6 bit</text>
+  </g>
+
+  <text x="20" y="140" class="title">Direct-mapped vs Set-associative vs Fully-associative</text>
+
+  <!-- Direct-mapped -->
+  <g transform="translate(20,170)">
+    <text x="0" y="0" class="title">Direct-mapped (1-way)</text>
+    <text x="0" y="20" class="small">주소 X → 정확히 한 칸</text>
+    <g transform="translate(0,30)">
+      <rect width="60" height="180" class="way"/>
+      <line x1="0"   y1="30" x2="60" y2="30" stroke="#22c55e"/>
+      <line x1="0"   y1="60" x2="60" y2="60" stroke="#22c55e"/>
+      <line x1="0"   y1="90" x2="60" y2="90" stroke="#22c55e"/>
+      <line x1="0"   y1="120" x2="60" y2="120" stroke="#22c55e"/>
+      <line x1="0"   y1="150" x2="60" y2="150" stroke="#22c55e"/>
+      <text x="30" y="20" class="lab">set 0</text>
+      <text x="30" y="50" class="lab">set 1</text>
+      <text x="30" y="80" class="lab">set 2</text>
+      <text x="30" y="110" class="lab">set 3</text>
+      <text x="30" y="140" class="lab">...</text>
+      <text x="30" y="170" class="lab">set N-1</text>
+    </g>
+  </g>
+
+  <!-- 4-way set associative -->
+  <g transform="translate(180,170)">
+    <text x="0" y="0" class="title">4-way set-associative (실전 표준)</text>
+    <text x="0" y="20" class="small">주소 X → 한 set의 4 way 중 어디든</text>
+    <g transform="translate(0,30)">
+      <g>
+        <rect x="0"   y="0" width="60" height="30" class="way"/>
+        <rect x="60"  y="0" width="60" height="30" class="way"/>
+        <rect x="120" y="0" width="60" height="30" class="way"/>
+        <rect x="180" y="0" width="60" height="30" class="way"/>
+      </g>
+      <g transform="translate(0,30)">
+        <rect x="0"   y="0" width="60" height="30" class="way"/>
+        <rect x="60"  y="0" width="60" height="30" class="way"/>
+        <rect x="120" y="0" width="60" height="30" class="way"/>
+        <rect x="180" y="0" width="60" height="30" class="way"/>
+      </g>
+      <g transform="translate(0,60)">
+        <rect x="0"   y="0" width="60" height="30" class="way"/>
+        <rect x="60"  y="0" width="60" height="30" class="way"/>
+        <rect x="120" y="0" width="60" height="30" class="way"/>
+        <rect x="180" y="0" width="60" height="30" class="way"/>
+      </g>
+      <g transform="translate(0,90)">
+        <rect x="0"   y="0" width="60" height="30" class="empty"/>
+        <rect x="60"  y="0" width="60" height="30" class="empty"/>
+        <rect x="120" y="0" width="60" height="30" class="empty"/>
+        <rect x="180" y="0" width="60" height="30" class="empty"/>
+      </g>
+      <text x="30"  y="20" class="lab">w0</text>
+      <text x="90"  y="20" class="lab">w1</text>
+      <text x="150" y="20" class="lab">w2</text>
+      <text x="210" y="20" class="lab">w3</text>
+      <text x="-10" y="50" class="small" text-anchor="end">set 0</text>
+      <text x="-10" y="80" class="small" text-anchor="end">set 1</text>
+      <text x="-10" y="110" class="small" text-anchor="end">set 2</text>
+      <text x="270" y="60" class="small">교체 정책</text>
+      <text x="270" y="74" class="small">(LRU, RRIP)</text>
+      <text x="270" y="88" class="small">→ 한 way 선택</text>
+    </g>
+  </g>
+
+  <!-- Fully associative -->
+  <g transform="translate(560,170)">
+    <text x="0" y="0" class="title">Fully-associative</text>
+    <text x="0" y="20" class="small">아무 칸에나 가능 (CAM)</text>
+    <g transform="translate(0,30)">
+      <rect width="180" height="180" class="way"/>
+      <text x="90" y="30" class="lab">slot 0</text>
+      <text x="90" y="55" class="lab">slot 1</text>
+      <text x="90" y="80" class="lab">slot 2</text>
+      <text x="90" y="105" class="lab">slot 3</text>
+      <text x="90" y="130" class="lab">...</text>
+      <text x="90" y="160" class="lab">slot N-1</text>
+    </g>
+  </g>
+
+  <text x="20" y="430" class="title">3C cache miss</text>
+  <g transform="translate(20,440)" class="small">
+    <text y="14"><tspan font-weight="600" fill="#ef4444">Compulsory</tspan>  처음 접근 → prefetch로 완화</text>
+    <text y="32"><tspan font-weight="600" fill="#f59e0b">Capacity</tspan>     working set &gt; 캐시 → blocking</text>
+    <text y="50"><tspan font-weight="600" fill="#3b82f6">Conflict</tspan>     같은 set 충돌 → padding, 더 높은 associativity</text>
+    <text y="68"><tspan font-weight="600" fill="#8b5cf6">Coherence</tspan>    멀티코어 invalidate (8장)</text>
+  </g>
+</svg>

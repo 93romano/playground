@@ -33,6 +33,22 @@
        (set 결정) (라인 내 위치)
 ```
 
+![Cache mapping — Direct/Set-associative/Fully](assets/06-cache-mapping.svg)
+
+```mermaid
+flowchart LR
+  ADDR["가상/물리 주소"] --> SPLIT["TAG | INDEX | OFFSET 분리"]
+  SPLIT -->|INDEX| SET[해당 set 선택]
+  SET --> CMP["set 내 모든 way의<br/>tag 동시 비교"]
+  SPLIT -->|TAG| CMP
+  CMP -->|일치 + valid| HIT["✅ HIT<br/>OFFSET으로 데이터 추출"]
+  CMP -->|불일치| MISS["❌ MISS<br/>다음 계층 fetch + 교체 정책으로<br/>한 way evict"]
+  classDef good fill:#dcfce7,stroke:#22c55e
+  classDef bad fill:#fee2e2,stroke:#ef4444
+  class HIT good
+  class MISS bad
+```
+
 ### 교체 정책
 
 set 안에서 어느 라인을 쫓아낼까:
@@ -108,6 +124,9 @@ outstanding cache miss를 추적하는 슬롯. 일반적으로 코어당 ~10. **
 ## 실무 성능 관점
 
 ### 1. False Sharing — 가장 잘 빠지는 함정
+
+![False sharing](assets/06-false-sharing.svg)
+
 
 ```c
 struct {

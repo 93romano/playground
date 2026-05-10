@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 460" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .lab   { font: 12px ui-monospace, monospace; fill: #111827; text-anchor:middle; }
+    .core   { fill: #fed7aa; stroke: #f97316; }
+    .l3     { fill: #fef3c7; stroke: #eab308; }
+    .dram   { fill: #bbf7d0; stroke: #22c55e; }
+    .socket { fill: #f9fafb; stroke: #374151; stroke-width: 2; }
+    .fast   { stroke: #22c55e; stroke-width: 2; fill: none; }
+    .slow   { stroke: #ef4444; stroke-width: 2; fill: none; stroke-dasharray: 5 4; }
+  </style>
+
+  <text x="20" y="26" class="title">NUMA topology — 2-socket server</text>
+
+  <!-- Socket 0 -->
+  <g transform="translate(40,60)">
+    <rect width="320" height="240" class="socket"/>
+    <text x="160" y="22" class="title" text-anchor="middle">Socket 0  (NUMA node 0)</text>
+    <g transform="translate(20,40)">
+      <rect width="60" height="40" class="core"/><text x="30" y="25" class="lab">Core</text>
+      <rect x="70"  y="0" width="60" height="40" class="core"/><text x="100" y="25" class="lab">Core</text>
+      <rect x="140" y="0" width="60" height="40" class="core"/><text x="170" y="25" class="lab">Core</text>
+      <rect x="210" y="0" width="60" height="40" class="core"/><text x="240" y="25" class="lab">Core</text>
+    </g>
+    <g transform="translate(20,100)">
+      <rect width="280" height="40" class="l3"/>
+      <text x="140" y="25" class="lab">L3 cache (shared)</text>
+    </g>
+    <g transform="translate(20,160)">
+      <rect width="280" height="50" class="dram"/>
+      <text x="140" y="20" class="lab">Local DRAM</text>
+      <text x="140" y="40" class="small" text-anchor="middle">~80 ns latency</text>
+    </g>
+  </g>
+
+  <!-- Socket 1 -->
+  <g transform="translate(440,60)">
+    <rect width="320" height="240" class="socket"/>
+    <text x="160" y="22" class="title" text-anchor="middle">Socket 1  (NUMA node 1)</text>
+    <g transform="translate(20,40)">
+      <rect width="60" height="40" class="core"/><text x="30" y="25" class="lab">Core</text>
+      <rect x="70"  y="0" width="60" height="40" class="core"/><text x="100" y="25" class="lab">Core</text>
+      <rect x="140" y="0" width="60" height="40" class="core"/><text x="170" y="25" class="lab">Core</text>
+      <rect x="210" y="0" width="60" height="40" class="core"/><text x="240" y="25" class="lab">Core</text>
+    </g>
+    <g transform="translate(20,100)">
+      <rect width="280" height="40" class="l3"/>
+      <text x="140" y="25" class="lab">L3 cache (shared)</text>
+    </g>
+    <g transform="translate(20,160)">
+      <rect width="280" height="50" class="dram"/>
+      <text x="140" y="20" class="lab">Local DRAM</text>
+      <text x="140" y="40" class="small" text-anchor="middle">~80 ns latency</text>
+    </g>
+  </g>
+
+  <!-- Interconnect -->
+  <line x1="360" y1="180" x2="440" y2="180" stroke="#374151" stroke-width="3"/>
+  <text x="400" y="170" class="small" text-anchor="middle">UPI / Infinity Fabric</text>
+  <text x="400" y="200" class="small" text-anchor="middle">~150 ns + BW 경쟁</text>
+
+  <!-- Latency comparison -->
+  <text x="20" y="340" class="title">Access latency 비교</text>
+  <g transform="translate(20,350)" class="small">
+    <text y="14"><tspan font-weight="600" fill="#22c55e">Local DRAM</tspan>      ~80 ns           (같은 소켓)</text>
+    <text y="32"><tspan font-weight="600" fill="#f59e0b">Remote LLC</tspan>      100–200 ns       (다른 소켓 캐시)</text>
+    <text y="50"><tspan font-weight="600" fill="#ef4444">Remote DRAM</tspan>     ~150 ns + BW    (인터커넥트 경유)</text>
+  </g>
+
+  <text x="20" y="436" class="small">처방: numactl --cpunodebind=0 --membind=0 ./prog  /  first-touch 정책으로 자동 NUMA-local</text>
+</svg>

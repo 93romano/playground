@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 460" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .lab   { font: 12px ui-monospace, monospace; fill: #111827; }
+    .step  { fill: #fde68a; stroke: #f59e0b; }
+    .spec  { fill: #fecaca; stroke: #ef4444; }
+    .leak  { fill: #ddd6fe; stroke: #8b5cf6; }
+    .arrow { stroke: #374151; stroke-width: 1.5; fill: none; }
+  </style>
+
+  <text x="20" y="26" class="title">Spectre v1 — Bounds Check Bypass via speculation</text>
+
+  <g transform="translate(20,50)">
+    <rect width="760" height="80" class="step"/>
+    <text x="20" y="24" class="lab">  if (x &lt; array1_size) {</text>
+    <text x="20" y="44" class="lab">      y = array2[ array1[x] * 256 ];   // 정상이라면 x는 항상 in-bounds</text>
+    <text x="20" y="64" class="lab">  }</text>
+  </g>
+
+  <g transform="translate(20,150)">
+    <rect width="760" height="60" class="spec"/>
+    <text x="20" y="24" class="lab">① 공격자가 x &lt; size를 반복 호출 → BPU "taken" 학습 (mistrain)</text>
+    <text x="20" y="44" class="lab">② 그 후 x = OUT_OF_BOUNDS 호출 → 분기는 not-taken이 정답이지만,<br/></text>
+  </g>
+
+  <g transform="translate(20,220)">
+    <rect width="760" height="60" class="spec"/>
+    <text x="20" y="24" class="lab">③ CPU가 BPU 예측 따라 if 본문을 <tspan font-weight="600">투기 실행</tspan></text>
+    <text x="20" y="44" class="lab">     → array1[OUT_OF_BOUNDS] = secret 비밀 바이트 (커널 메모리 등)</text>
+  </g>
+
+  <g transform="translate(20,290)">
+    <rect width="760" height="60" class="leak"/>
+    <text x="20" y="24" class="lab">④ array2[secret * 256] 도 투기 실행 → secret값에 따라 다른 캐시 라인 fill</text>
+    <text x="20" y="44" class="lab">⑤ 분기 결과 확인 → 투기 결과 폐기 (rollback). <tspan font-weight="600">하지만 캐시 상태는 남음.</tspan></text>
+  </g>
+
+  <g transform="translate(20,360)">
+    <rect width="760" height="60" class="leak"/>
+    <text x="20" y="24" class="lab">⑥ 공격자가 array2의 256개 라인을 timing 측정 (Flush+Reload)</text>
+    <text x="20" y="44" class="lab">     → 빠른 라인 = secret이 그 인덱스 → <tspan font-weight="600" fill="#ef4444">비밀 1바이트 추출</tspan> → 반복</text>
+  </g>
+
+  <text x="20" y="450" class="small">Mitigation: retpoline, IBRS, KPTI (Meltdown), 분기 후 LFENCE, Speculative Load Hardening (SLH)</text>
+</svg>

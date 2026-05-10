@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .lab   { font: 11px ui-monospace, monospace; fill: #111827; }
+    .row1 { fill: #fde68a; stroke: #f59e0b; }
+    .row2 { fill: #fed7aa; stroke: #f97316; }
+    .row3 { fill: #fecaca; stroke: #ef4444; }
+    .row4 { fill: #fbcfe8; stroke: #ec4899; }
+    .row5 { fill: #ddd6fe; stroke: #8b5cf6; }
+    .row6 { fill: #bfdbfe; stroke: #3b82f6; }
+    .row7 { fill: #bbf7d0; stroke: #22c55e; }
+  </style>
+
+  <text x="20" y="26" class="title">Flamegraph — sampling profiler 시각화</text>
+  <text x="20" y="44" class="small">x축 = 샘플 수 (= 시간 비율, 정렬 무관)   /   y축 = call stack 깊이 (위 = 자식)</text>
+
+  <!-- Bottom: main -->
+  <g transform="translate(20,80)">
+    <rect width="760" height="30" class="row1"/>
+    <text x="380" y="20" class="lab" text-anchor="middle">main()  100%</text>
+  </g>
+  <!-- 2 -->
+  <g transform="translate(20,110)">
+    <rect width="100" height="30" class="row2"/><text x="50" y="20" class="lab" text-anchor="middle">init</text>
+    <rect x="100" width="540" height="30" class="row2"/><text x="370" y="20" class="lab" text-anchor="middle">process_request()  71%</text>
+    <rect x="640" width="120" height="30" class="row2"/><text x="700" y="20" class="lab" text-anchor="middle">cleanup</text>
+  </g>
+  <!-- 3 -->
+  <g transform="translate(20,140)">
+    <rect x="100" width="200" height="30" class="row3"/><text x="200" y="20" class="lab" text-anchor="middle">parse_input</text>
+    <rect x="300" width="280" height="30" class="row3"/><text x="440" y="20" class="lab" text-anchor="middle">compute()  37%  ← HOT</text>
+    <rect x="580" width="60" height="30" class="row3"/><text x="610" y="20" class="lab" text-anchor="middle">log</text>
+  </g>
+  <!-- 4 -->
+  <g transform="translate(20,170)">
+    <rect x="100" width="80" height="30" class="row4"/><text x="140" y="20" class="lab" text-anchor="middle">tokenize</text>
+    <rect x="180" width="120" height="30" class="row4"/><text x="240" y="20" class="lab" text-anchor="middle">json_decode</text>
+    <rect x="300" width="240" height="30" class="row4"/><text x="420" y="20" class="lab" text-anchor="middle">matmul()  31%  ← BIGGEST</text>
+    <rect x="540" width="40" height="30" class="row4"/><text x="560" y="20" class="lab" text-anchor="middle">norm</text>
+  </g>
+  <!-- 5 -->
+  <g transform="translate(20,200)">
+    <rect x="180" width="120" height="30" class="row5"/><text x="240" y="20" class="lab" text-anchor="middle">strdup</text>
+    <rect x="300" width="180" height="30" class="row5"/><text x="390" y="20" class="lab" text-anchor="middle">inner_loop</text>
+    <rect x="480" width="60" height="30" class="row5"/><text x="510" y="20" class="lab" text-anchor="middle">memset</text>
+  </g>
+  <!-- 6 -->
+  <g transform="translate(20,230)">
+    <rect x="300" width="180" height="30" class="row6"/><text x="390" y="20" class="lab" text-anchor="middle">_mm256_fmadd_ps × N</text>
+  </g>
+
+  <text x="20" y="290" class="title">읽는 법</text>
+  <g transform="translate(20,300)" class="small">
+    <text y="14">▸ 가로로 넓은 박스 = 시간 많이 차지 → 우선 공략</text>
+    <text y="32">▸ 같은 함수가 여러 곳에 나타나면 다른 호출 경로별로 분리됨</text>
+    <text y="50">▸ off-CPU 시간 (lock wait, I/O wait)은 별도 off-cpu flamegraph로</text>
+  </g>
+</svg>

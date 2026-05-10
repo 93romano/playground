@@ -21,6 +21,8 @@
 - 가상 주소 공간을 **고정 크기 블록**으로 나눔. 일반적으로 4KB.
 - 4KB 페이지 + 64-bit 주소 → 페이지 번호 52 bit, 페이지 내 offset 12 bit
 
+![Page walk + TLB + Huge page](assets/07-page-walk.svg)
+
 ### 페이지 테이블 (4단계, x86-64 기준)
 
 ```
@@ -47,6 +49,25 @@ CR3 → PML4 → PDPT → PD → PT → 물리 페이지 + offset
 - **Minor fault**: 페이지가 물리적으론 있지만 매핑이 안 된 상태 (빠른 처리)
 - **Major fault**: 디스크에서 가져와야 함 (수 ms)
 - **Segfault**: 잘못된 접근 → 프로세스 종료
+
+```mermaid
+flowchart TD
+  A["메모리 접근<br/>가상 주소"] --> T{TLB lookup}
+  T -->|hit| OK[변환 완료<br/>~0 cycle]
+  T -->|miss| W[하드웨어 page walk]
+  W --> P{PTE 존재?}
+  P -->|있음, 권한 OK| FILL[TLB fill → 접근]
+  P -->|있음, 권한 위반| SEG[Segmentation fault<br/>SIGSEGV]
+  P -->|없음, lazy alloc| MIN[Minor fault<br/>커널이 zero page 매핑]
+  P -->|없음, swap out| MAJ[Major fault<br/>디스크 read ~ms]
+  P -->|매핑 자체 없음| SEG
+  classDef good fill:#dcfce7,stroke:#22c55e
+  classDef warn fill:#fef3c7,stroke:#f59e0b
+  classDef bad fill:#fee2e2,stroke:#ef4444
+  class OK,FILL good
+  class MIN,MAJ warn
+  class SEG bad
+```
 
 ❓ **면접: "fork()는 어떻게 빠른가?"** **Copy-on-Write (CoW)**: fork 시 페이지 테이블만 복사하고 모든 페이지를 read-only로 표시. 한쪽이 쓰려 할 때만 그 페이지를 복제.
 

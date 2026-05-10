@@ -29,6 +29,42 @@
 5. WB  (Write Back)          결과를 레지스터에 기록
 ```
 
+```mermaid
+flowchart LR
+  PC[Program<br/>Counter] --> IF
+  IF[IF<br/>Fetch] --> ID[ID<br/>Decode]
+  ID --> EX[EX<br/>ALU]
+  EX --> MEM[MEM<br/>Load/Store]
+  MEM --> WB[WB<br/>Register File]
+  WB -.->|next PC| PC
+  RF[(Register<br/>File)] -.->|read| ID
+  RF -.->|write| WB
+  M[(Memory)] -.->|fetch| IF
+  M -.->|data| MEM
+```
+
+**CPU 블록 다이어그램 (개념도)**
+```
+                     ┌──────────────────────────────────┐
+   ┌──────────┐      │             CPU Core              │
+   │  Memory  │◄────►│  ┌────────────────────────────┐   │
+   │   /L1$   │      │  │  Front-end                 │   │
+   └──────────┘      │  │  Fetch → Decode → Rename   │   │
+                     │  └────────────┬───────────────┘   │
+                     │               ▼                   │
+                     │  ┌────────────────────────────┐   │
+                     │  │  Back-end (OoO)            │   │
+                     │  │  Scheduler ─► EX (ALU/FPU) │   │
+                     │  │              ─► LSU        │   │
+                     │  └────────────┬───────────────┘   │
+                     │               ▼                   │
+                     │  ┌────────────────────────────┐   │
+                     │  │  Retire (in-order, ROB)    │   │
+                     │  │  → Architectural Reg File  │   │
+                     │  └────────────────────────────┘   │
+                     └──────────────────────────────────┘
+```
+
 ### RISC vs CISC
 
 | | RISC (ARM, RISC-V, MIPS) | CISC (x86, x86-64) |
@@ -97,6 +133,23 @@ x86 명령은 가변 길이(1~15 byte). 디코딩 자체가 비싼 작업이라:
 | 정렬 패딩       |  <- ABI는 보통 16-byte align 요구
 +----------------+
 낮은 주소         <- RSP
+```
+
+![Stack frame layout](assets/02-stack-frame.svg)
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant Caller
+  participant Stack
+  participant Callee
+  Caller->>Stack: 인자 → RDI/RSI/...  (7+는 push)
+  Caller->>Stack: CALL → push return addr
+  Callee->>Stack: push rbp; mov rbp, rsp
+  Callee->>Stack: sub rsp, N  (locals 공간)
+  Note over Callee,Stack: 함수 본문 실행<br/>callee-saved 보존
+  Callee->>Stack: leave (mov rsp, rbp; pop rbp)
+  Callee->>Caller: RET → pop return addr
 ```
 
 ### Privilege Level (Ring)

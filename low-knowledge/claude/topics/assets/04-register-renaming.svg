@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 360" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .ins   { font: 13px ui-monospace, monospace; fill: #111827; }
+    .arch  { fill: #fde68a; stroke: #f59e0b; }
+    .phys  { fill: #bfdbfe; stroke: #3b82f6; }
+    .raw   { stroke: #ef4444; stroke-width: 2; fill: none; }
+    .waw   { stroke: #9ca3af; stroke-width: 2; fill: none; stroke-dasharray: 5 4; }
+  </style>
+
+  <text x="20" y="26" class="title">Register renaming — false dependency 제거</text>
+
+  <text x="20" y="60" class="title">Before (architectural register r1):</text>
+  <g transform="translate(20,76)" class="ins">
+    <text y="14">(1)  add  r1, r2, r3</text>
+    <text y="34">(2)  add  r4, r1, r5    ← (1)에 RAW 의존 (진짜)</text>
+    <text y="54">(3)  add  r1, r6, r7    ← (1)에 WAW (가짜)  ← (2)에 WAR (가짜)</text>
+    <text y="74">(4)  add  r8, r1, r9    ← (3)에 RAW (진짜)</text>
+  </g>
+  <line x1="240" y1="78" x2="240" y2="98" class="raw" marker-end="url(#a2)"/>
+  <line x1="120" y1="98" x2="120" y2="118" class="waw" marker-end="url(#a3)"/>
+  <line x1="240" y1="118" x2="240" y2="138" class="raw" marker-end="url(#a2)"/>
+
+  <text x="20" y="190" class="title">After rename (physical registers p10/p11/...):</text>
+  <g transform="translate(20,206)" class="ins">
+    <text y="14">(1)  add  p10, p2, p3      r1 → p10</text>
+    <text y="34">(2)  add  p20, p10, p5     r4 → p20  (uses p10)</text>
+    <text y="54">(3)  add  p11, p6, p7      r1 → p11  ← false dep 제거! (1)과 병렬</text>
+    <text y="74">(4)  add  p21, p11, p9     r8 → p21  (uses p11)</text>
+  </g>
+
+  <g transform="translate(560,80)">
+    <rect width="180" height="160" fill="#f9fafb" stroke="#9ca3af"/>
+    <text x="90" y="20" text-anchor="middle" class="title">RAT (rename map)</text>
+    <text x="14" y="50" class="ins">r1 → p11</text>
+    <text x="14" y="74" class="ins">r2 → p2</text>
+    <text x="14" y="98" class="ins">r4 → p20</text>
+    <text x="14" y="122" class="ins">r8 → p21</text>
+    <text x="14" y="146" class="small">(아키텍쳐 → 물리)</text>
+  </g>
+
+  <text x="20" y="320" class="small">실제 칩 PRF 크기: Skylake 180 (INT) / 168 (FP), Apple Firestorm ~380. ROB가 inflight 상한.</text>
+
+  <defs>
+    <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#ef4444"/>
+    </marker>
+    <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#9ca3af"/>
+    </marker>
+  </defs>
+</svg>

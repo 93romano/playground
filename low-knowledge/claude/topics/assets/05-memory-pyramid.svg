@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 460" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .lab   { font: 13px ui-monospace, monospace; fill: #111827; }
+    .reg { fill: #fee2e2; stroke: #ef4444; }
+    .l1  { fill: #fed7aa; stroke: #f97316; }
+    .l2  { fill: #fef08a; stroke: #eab308; }
+    .l3  { fill: #d9f99d; stroke: #84cc16; }
+    .ram { fill: #bbf7d0; stroke: #22c55e; }
+    .ssd { fill: #a5f3fc; stroke: #06b6d4; }
+    .net { fill: #ddd6fe; stroke: #8b5cf6; }
+  </style>
+
+  <text x="20" y="26" class="title">Memory Hierarchy — 위로 갈수록 빠름·작음·비쌈</text>
+
+  <!-- Pyramid layers (trapezoids) -->
+  <g transform="translate(380,60)">
+    <!-- Register -->
+    <polygon points="-40,0 40,0 50,30 -50,30" class="reg"/>
+    <text x="0" y="20" text-anchor="middle" class="lab">Register</text>
+    <!-- L1 -->
+    <polygon points="-50,30 50,30 65,65 -65,65" class="l1"/>
+    <text x="0" y="55" text-anchor="middle" class="lab">L1 cache</text>
+    <!-- L2 -->
+    <polygon points="-65,65 65,65 85,105 -85,105" class="l2"/>
+    <text x="0" y="93" text-anchor="middle" class="lab">L2 cache</text>
+    <!-- L3 -->
+    <polygon points="-85,105 85,105 115,150 -115,150" class="l3"/>
+    <text x="0" y="135" text-anchor="middle" class="lab">L3 (LLC, shared)</text>
+    <!-- DRAM -->
+    <polygon points="-115,150 115,150 155,205 -155,205" class="ram"/>
+    <text x="0" y="183" text-anchor="middle" class="lab">DRAM (Main memory)</text>
+    <!-- SSD -->
+    <polygon points="-155,205 155,205 200,265 -200,265" class="ssd"/>
+    <text x="0" y="240" text-anchor="middle" class="lab">NVMe SSD / HDD</text>
+    <!-- Network -->
+    <polygon points="-200,265 200,265 250,330 -250,330" class="net"/>
+    <text x="0" y="302" text-anchor="middle" class="lab">Network / Distributed storage</text>
+  </g>
+
+  <!-- Latency labels left -->
+  <g class="small" text-anchor="end">
+    <text x="195" y="80">~ 0 cycle  (~0.3 ns)</text>
+    <text x="195" y="115">~ 4 cycle  (~1 ns)</text>
+    <text x="195" y="155">~ 12 cycle (~3 ns)</text>
+    <text x="195" y="200">~ 40 cycle (~10 ns)</text>
+    <text x="195" y="245">~ 200 cycle (~80 ns)</text>
+    <text x="195" y="295">~ 50–100 µs</text>
+    <text x="195" y="365">~ 0.5 ms (LAN)  /  ~150 ms (WAN)</text>
+  </g>
+
+  <!-- Capacity labels right -->
+  <g class="small" text-anchor="start">
+    <text x="565" y="80">수십 개</text>
+    <text x="565" y="115">32–64 KB / core</text>
+    <text x="565" y="155">256 KB – 2 MB / core</text>
+    <text x="565" y="200">수 ~ 수십 MB</text>
+    <text x="565" y="245">GB ~ TB</text>
+    <text x="565" y="295">TB ~ PB</text>
+    <text x="565" y="365">사실상 무제한</text>
+  </g>
+
+  <text x="20" y="420" class="small">Norvig 비유: L1 = 1초로 치면 → DRAM 100초, SSD 1일, 네트워크 RTT 1년.</text>
+  <text x="20" y="438" class="small">최적화 본질: hot data를 가능한 위 계층에 머무르게 하는 것.</text>
+</svg>

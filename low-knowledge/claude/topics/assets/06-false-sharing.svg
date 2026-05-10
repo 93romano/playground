@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 360" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .lab   { font: 12px ui-monospace, monospace; fill: #111827; text-anchor:middle; }
+    .a   { fill: #fecaca; stroke: #ef4444; }
+    .b   { fill: #bfdbfe; stroke: #3b82f6; }
+    .pad { fill: #e5e7eb; stroke: #9ca3af; stroke-dasharray: 3 3; }
+  </style>
+
+  <text x="20" y="26" class="title">False Sharing — 다른 변수, 같은 캐시 라인</text>
+
+  <text x="20" y="60" class="title">❌ Bad: 같은 64-byte 라인에 두 카운터</text>
+  <g transform="translate(20,76)">
+    <rect x="0"   y="0" width="60" height="50" class="a"/>
+    <rect x="60"  y="0" width="60" height="50" class="b"/>
+    <rect x="120" y="0" width="440" height="50" class="pad"/>
+    <text x="30"  y="30" class="lab">a</text>
+    <text x="90"  y="30" class="lab">b</text>
+    <text x="340" y="30" class="lab">padding (사용 안 함)</text>
+    <text x="280" y="76" text-anchor="middle" class="small">─── 1 cache line (64B) ───</text>
+  </g>
+
+  <g transform="translate(20,170)">
+    <text x="0" y="0" class="small">Core 0 update a → 라인 M state</text>
+    <text x="0" y="16" class="small">Core 1 update b → invalidate Core 0의 라인 → 다시 fetch</text>
+    <text x="0" y="32" class="small">↻ 핑퐁: 100x 느려짐 (수십 GB/s 트래픽 → MB/s)</text>
+  </g>
+
+  <text x="20" y="230" class="title">✅ Good: 라인 분리 (alignas(64))</text>
+  <g transform="translate(20,246)">
+    <rect x="0"   y="0" width="60"  height="50" class="a"/>
+    <rect x="60"  y="0" width="200" height="50" class="pad"/>
+    <rect x="280" y="0" width="60"  height="50" class="b"/>
+    <rect x="340" y="0" width="200" height="50" class="pad"/>
+    <text x="30"  y="30" class="lab">a</text>
+    <text x="160" y="30" class="lab">padding</text>
+    <text x="310" y="30" class="lab">b</text>
+    <text x="440" y="30" class="lab">padding</text>
+    <line x1="0"   y1="58" x2="260" y2="58" stroke="#374151"/>
+    <line x1="280" y1="58" x2="540" y2="58" stroke="#374151"/>
+    <text x="130" y="76" text-anchor="middle" class="small">라인 1</text>
+    <text x="410" y="76" text-anchor="middle" class="small">라인 2</text>
+  </g>
+
+  <text x="20" y="340" class="small">C++17: <tspan font-weight="600">std::hardware_destructive_interference_size</tspan> = 보통 64. perf c2c로 감지.</text>
+</svg>
