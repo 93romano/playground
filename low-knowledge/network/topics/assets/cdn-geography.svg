@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 400" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .city  { font: 11px sans-serif; fill: #374151; text-anchor: middle; }
+    .lab   { font: 11px ui-monospace, monospace; fill: #111827; }
+    .edge  { fill: #dcfce7; stroke: #22c55e; }
+    .origin{ fill: #ede9fe; stroke: #8b5cf6; }
+    .user  { fill: #dbeafe; stroke: #3b82f6; }
+    .land  { fill: #f9fafb; stroke: #e5e7eb; }
+  </style>
+
+  <text x="20" y="26" class="title">CDN: 콘텐츠를 사용자 근처 엣지로 밀어 RTT를 줄인다</text>
+
+  <!-- world band -->
+  <rect x="20" y="52" width="740" height="160" class="land" rx="6"/>
+  <text x="34" y="70" class="small">전 세계 엣지 PoP (녹색) · 오리진 1곳 (보라)</text>
+
+  <!-- edge PoPs -->
+  <circle cx="120" cy="120" r="10" class="edge"/><text x="120" y="150" class="city">서울 엣지</text>
+  <circle cx="250" cy="160" r="10" class="edge"/><text x="250" y="188" class="city">싱가포르</text>
+  <circle cx="360" cy="110" r="10" class="edge"/><text x="360" y="100" class="city">프랑크푸르트</text>
+  <circle cx="480" cy="150" r="10" class="edge"/><text x="480" y="178" class="city">상파울루</text>
+  <circle cx="600" cy="115" r="10" class="edge"/><text x="600" y="105" class="city">us-west</text>
+
+  <!-- origin -->
+  <rect x="678" y="104" width="60" height="34" class="origin" rx="4"/>
+  <text x="708" y="126" class="city">오리진</text>
+  <text x="708" y="164" class="city">us-east-1</text>
+
+  <!-- user -->
+  <rect x="96" y="240" width="48" height="30" class="user" rx="4"/>
+  <text x="120" y="260" class="city">사용자</text>
+  <text x="120" y="230" class="city">(서울)</text>
+
+  <!-- fast path: user -> seoul edge -->
+  <line x1="120" y1="238" x2="120" y2="132" stroke="#22c55e" stroke-width="2.5" marker-end="url(#g)"/>
+  <text x="132" y="200" class="lab" fill="#16a34a">~10ms · 캐시 HIT</text>
+
+  <!-- slow path: seoul edge -> origin (miss) -->
+  <line x1="130" y1="116" x2="676" y2="120" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#p)"/>
+  <text x="360" y="82" class="lab" fill="#7c3aed">캐시 MISS 때만 오리진 왕복 ~180ms (origin shield)</text>
+
+  <!-- legend / numbers -->
+  <text x="20" y="308" class="title">숫자로 보는 이득</text>
+  <g transform="translate(20,318)" class="small">
+    <text y="16">서울 사용자 → 버지니아 오리진 직접: RTT <tspan font-weight="600" fill="#8b5cf6">~180ms</tspan> &#160;·&#160; 서울 사용자 → 서울 엣지: RTT <tspan font-weight="600" fill="#16a34a">~10ms</tspan></text>
+    <text y="36">정적 자원(JS/CSS/이미지/폰트)은 엣지가 즉답. <tspan font-weight="600">Anycast</tspan>로 같은 IP라도 가장 가까운 PoP에 자동 라우팅.</text>
+    <text y="56">TLS 종단도 엣지에서 → 핸드셰이크 RTT까지 짧아짐. 동적 요청은 origin shield가 오리진 부하·중복 fetch를 흡수.</text>
+  </g>
+
+  <defs>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#22c55e"/></marker>
+    <marker id="p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#8b5cf6"/></marker>
+  </defs>
+</svg>

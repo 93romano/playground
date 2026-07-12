@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 380" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .lab   { font: 12px ui-monospace, monospace; fill: #111827; text-anchor: middle; }
+    .sub   { font: 10px sans-serif; fill: #6b7280; text-anchor: middle; }
+    .tree  { fill: #e0e7ff; stroke: #6366f1; }
+    .style { fill: #fde68a; stroke: #f59e0b; }
+    .layout{ fill: #fca5a5; stroke: #ef4444; }
+    .paint { fill: #fdba74; stroke: #ea580c; }
+    .raster{ fill: #93c5fd; stroke: #3b82f6; }
+    .comp  { fill: #86efac; stroke: #22c55e; }
+    .arrow { stroke: #374151; stroke-width: 1.6; fill: none; }
+    .skip  { stroke: #22c55e; stroke-width: 2; fill: none; stroke-dasharray: 6 3; }
+  </style>
+
+  <text x="20" y="26" class="title">렌더링 파이프라인 — 위쪽 단계를 건드릴수록 비싸다 (프레임 예산 16.6ms)</text>
+
+  <!-- pipeline boxes -->
+  <g transform="translate(0,55)">
+    <rect x="18"  y="20" width="120" height="52" class="tree"/>
+    <text x="78"  y="42" class="lab">DOM + CSSOM</text>
+    <text x="78"  y="60" class="sub">파싱 결과 두 트리</text>
+
+    <rect x="162" y="20" width="96" height="52" class="style"/>
+    <text x="210" y="42" class="lab">Style</text>
+    <text x="210" y="60" class="sub">computed</text>
+
+    <rect x="282" y="20" width="120" height="52" class="layout"/>
+    <text x="342" y="42" class="lab">Layout</text>
+    <text x="342" y="60" class="sub">위치·크기 reflow</text>
+
+    <rect x="426" y="20" width="110" height="52" class="paint"/>
+    <text x="481" y="42" class="lab">Paint</text>
+    <text x="481" y="60" class="sub">그리기 명령 repaint</text>
+
+    <rect x="560" y="20" width="110" height="52" class="raster"/>
+    <text x="615" y="42" class="lab">Raster</text>
+    <text x="615" y="60" class="sub">픽셀 비트맵 (GPU)</text>
+
+    <rect x="694" y="20" width="150" height="52" class="comp"/>
+    <text x="769" y="42" class="lab">Composite</text>
+    <text x="769" y="60" class="sub">레이어 합성 (GPU)</text>
+
+    <line x1="138" y1="46" x2="160" y2="46" class="arrow" marker-end="url(#a)"/>
+    <line x1="258" y1="46" x2="280" y2="46" class="arrow" marker-end="url(#a)"/>
+    <line x1="402" y1="46" x2="424" y2="46" class="arrow" marker-end="url(#a)"/>
+    <line x1="536" y1="46" x2="558" y2="46" class="arrow" marker-end="url(#a)"/>
+    <line x1="670" y1="46" x2="692" y2="46" class="arrow" marker-end="url(#a)"/>
+  </g>
+
+  <!-- cost gradient bar -->
+  <g transform="translate(18,140)">
+    <text x="0" y="0" class="small">비용 →</text>
+    <rect x="0" y="8" width="826" height="12" fill="url(#grad)"/>
+    <text x="60" y="34" class="sub">싸다</text>
+    <text x="770" y="34" class="sub">비싸다? (아니, 반대!)</text>
+  </g>
+
+  <!-- what triggers what -->
+  <g transform="translate(0,190)">
+    <rect x="282" y="8" width="254" height="30" fill="#fee2e2" stroke="#ef4444"/>
+    <text x="409" y="27" class="sub" fill="#b91c1c">width/top/left/font-size 변경 → Layout부터 전부 다시</text>
+
+    <rect x="426" y="46" width="244" height="30" fill="#ffedd5" stroke="#ea580c"/>
+    <text x="548" y="65" class="sub" fill="#c2410c">color/background/box-shadow 변경 → Paint부터</text>
+  </g>
+
+  <!-- composite-only fast path -->
+  <g transform="translate(0,250)">
+    <path d="M78 20 C 78 100, 769 100, 769 74" class="skip" marker-end="url(#s)"/>
+    <rect x="330" y="86" width="330" height="34" fill="#dcfce7" stroke="#22c55e"/>
+    <text x="495" y="107" class="lab" fill="#15803d">transform / opacity → Layout·Paint 건너뛰고 Composite만</text>
+  </g>
+
+  <text x="18" y="366" class="small">→ 60fps = 프레임당 16.6ms. JS + 스타일 + 레이아웃 + 페인트를 이 안에 못 끝내면 프레임 드롭(jank).</text>
+
+  <defs>
+    <linearGradient id="grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#86efac"/>
+      <stop offset="0.5" stop-color="#fdba74"/>
+      <stop offset="1" stop-color="#fca5a5"/>
+    </linearGradient>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#374151"/></marker>
+    <marker id="s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#22c55e"/></marker>
+  </defs>
+</svg>

@@ -1,0 +1,19 @@
+# OS
+.DS_Store
+
+# Dependencies
+node_modules/
+
+# Environment / secrets
+.env
+*.env
+
+# Build output
+engine/build/
+dist/
+
+# Databases
+*.db
+
+# Logs
+*.log

@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 470" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .h     { font: 600 12px sans-serif; fill: #111827; text-anchor: middle; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .lab   { font: 11px ui-monospace, monospace; fill: #111827; text-anchor: middle; }
+    .parent{ fill: #fef3c7; stroke: #f59e0b; }
+    .child { fill: #bfdbfe; stroke: #3b82f6; }
+    .ro    { fill: #e5e7eb; stroke: #6b7280; }
+    .copy  { fill: #bbf7d0; stroke: #22c55e; }
+    .bad   { fill: #fee2e2; stroke: #ef4444; }
+    .arrow { stroke: #374151; stroke-width: 1.4; fill: none; }
+    .arrw  { stroke: #22c55e; stroke-width: 1.6; fill: none; }
+  </style>
+
+  <!-- ===== TOP: right after fork ===== -->
+  <text x="20" y="26" class="title">① fork() 직후 — 물리 페이지는 한 장도 복사하지 않는다</text>
+
+  <rect x="40" y="44" width="150" height="120" class="parent"/>
+  <text x="115" y="62" class="h">부모 페이지 테이블</text>
+  <text x="115" y="86"  class="lab">VPN 0 → P1 (R/O)</text>
+  <text x="115" y="108" class="lab">VPN 1 → P2 (R/O)</text>
+  <text x="115" y="130" class="lab">VPN 2 → P3 (R/O)</text>
+  <text x="115" y="152" class="small" text-anchor="middle">쓰기 금지로 표시</text>
+
+  <rect x="630" y="44" width="150" height="120" class="child"/>
+  <text x="705" y="62" class="h">자식 페이지 테이블</text>
+  <text x="705" y="86"  class="lab">VPN 0 → P1 (R/O)</text>
+  <text x="705" y="108" class="lab">VPN 1 → P2 (R/O)</text>
+  <text x="705" y="130" class="lab">VPN 2 → P3 (R/O)</text>
+  <text x="705" y="152" class="small" text-anchor="middle">페이지 테이블만 복제</text>
+
+  <!-- shared physical pages -->
+  <rect x="360" y="52"  width="100" height="26" class="ro"/>
+  <text x="410" y="69" class="lab">P1</text>
+  <rect x="360" y="86"  width="100" height="26" class="ro"/>
+  <text x="410" y="103" class="lab">P2</text>
+  <rect x="360" y="120" width="100" height="26" class="ro"/>
+  <text x="410" y="137" class="lab">P3</text>
+  <text x="410" y="164" class="small" text-anchor="middle">공유 물리 페이지</text>
+
+  <line x1="190" y1="65"  x2="358" y2="65"  class="arrow" marker-end="url(#ar)"/>
+  <line x1="190" y1="99"  x2="358" y2="99"  class="arrow" marker-end="url(#ar)"/>
+  <line x1="190" y1="133" x2="358" y2="133" class="arrow" marker-end="url(#ar)"/>
+  <line x1="630" y1="65"  x2="462" y2="65"  class="arrow" marker-end="url(#ar)"/>
+  <line x1="630" y1="99"  x2="462" y2="99"  class="arrow" marker-end="url(#ar)"/>
+  <line x1="630" y1="133" x2="462" y2="133" class="arrow" marker-end="url(#ar)"/>
+
+  <text x="410" y="196" class="small" text-anchor="middle">비용 = 페이지 테이블 수 MB 뿐. 4 GB 프로세스를 fork 해도 물리 4 GB 복사는 없다.</text>
+
+  <line x1="20" y1="214" x2="800" y2="214" stroke="#d1d5db" stroke-dasharray="4 3"/>
+
+  <!-- ===== BOTTOM: write triggers copy ===== -->
+  <text x="20" y="242" class="title">② 자식이 P2 에 write → 페이지 폴트 → 커널이 그 한 장만 복사</text>
+
+  <rect x="40" y="262" width="150" height="120" class="parent"/>
+  <text x="115" y="280" class="h">부모</text>
+  <text x="115" y="304" class="lab">VPN 0 → P1 (R/O)</text>
+  <text x="115" y="326" class="lab">VPN 1 → P2 (R/W)</text>
+  <text x="115" y="348" class="lab">VPN 2 → P3 (R/O)</text>
+
+  <rect x="630" y="262" width="150" height="120" class="child"/>
+  <text x="705" y="280" class="h">자식 (write 발생)</text>
+  <text x="705" y="304" class="lab">VPN 0 → P1 (R/O)</text>
+  <text x="705" y="326" class="lab" fill="#16a34a">VPN 1 → P2' (R/W)</text>
+  <text x="705" y="348" class="lab">VPN 2 → P3 (R/O)</text>
+
+  <rect x="360" y="270" width="100" height="26" class="ro"/>
+  <text x="410" y="287" class="lab">P1</text>
+  <rect x="360" y="304" width="100" height="26" class="parent"/>
+  <text x="410" y="321" class="lab">P2</text>
+  <rect x="360" y="338" width="100" height="26" class="ro"/>
+  <text x="410" y="355" class="lab">P3</text>
+  <rect x="360" y="392" width="100" height="26" class="copy"/>
+  <text x="410" y="409" class="lab">P2' (복사본)</text>
+
+  <line x1="190" y1="283" x2="358" y2="283" class="arrow" marker-end="url(#ar)"/>
+  <line x1="190" y1="317" x2="358" y2="317" class="arrow" marker-end="url(#ar)"/>
+  <line x1="190" y1="351" x2="358" y2="351" class="arrow" marker-end="url(#ar)"/>
+  <line x1="630" y1="283" x2="462" y2="283" class="arrow" marker-end="url(#ar)"/>
+  <line x1="630" y1="351" x2="462" y2="351" class="arrow" marker-end="url(#ar)"/>
+  <line x1="630" y1="329" x2="462" y2="405" class="arrw arrow" stroke="#22c55e" marker-end="url(#ag)"/>
+  <line x1="410" y1="330" x2="410" y2="390" class="arrw" stroke="#22c55e" stroke-width="1.6" fill="none" marker-end="url(#ag)"/>
+  <text x="486" y="384" class="small" fill="#16a34a">이 한 장만 복사</text>
+
+  <rect x="30" y="430" width="760" height="30" fill="#f0fdf4" stroke="#22c55e"/>
+  <text x="410" y="450" class="h">그래서 fork 후 곧바로 exec() 하면 거의 아무것도 복사되지 않는다 — 회계사는 '쓸 때만' 발행한다.</text>
+
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#374151"/>
+    </marker>
+    <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#22c55e"/>
+    </marker>
+  </defs>
+</svg>

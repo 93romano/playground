@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 470" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .h     { font: 600 12px sans-serif; fill: #111827; text-anchor: middle; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .lab   { font: 11px ui-monospace, monospace; fill: #111827; text-anchor: middle; }
+    .proc  { fill: #fef3c7; stroke: #f59e0b; }
+    .pt    { fill: #ddd6fe; stroke: #8b5cf6; }
+    .shared{ fill: #bfdbfe; stroke: #3b82f6; }
+    .stack { fill: #bbf7d0; stroke: #22c55e; }
+    .ram   { fill: #f3f4f6; stroke: #374151; }
+    .bad   { fill: #fee2e2; stroke: #ef4444; }
+    .arrow { stroke: #374151; stroke-width: 1.4; fill: none; }
+    .wall  { stroke: #ef4444; stroke-width: 2; stroke-dasharray: 5 3; }
+  </style>
+
+  <!-- ================= LEFT: process isolation ================= -->
+  <text x="20" y="26" class="title">프로세스 = 주소 공간 격리 (crash isolation)</text>
+
+  <!-- Process A (crashed) -->
+  <rect x="30" y="46" width="165" height="150" class="proc"/>
+  <text x="112" y="64" class="h">프로세스 A (탭 A)</text>
+  <rect x="44" y="72"  width="137" height="28" class="bad"/>
+  <text x="112" y="90" class="lab">stack ↓  (죽음)</text>
+  <rect x="44" y="104" width="137" height="28" class="proc"/>
+  <text x="112" y="122" class="lab">heap ↑</text>
+  <rect x="44" y="136" width="137" height="28" class="proc"/>
+  <text x="112" y="154" class="lab">code · data</text>
+  <rect x="30" y="204" width="165" height="26" class="pt"/>
+  <text x="112" y="221" class="lab">페이지 테이블 A</text>
+
+  <!-- Process B (alive) -->
+  <rect x="225" y="46" width="165" height="150" class="proc"/>
+  <text x="307" y="64" class="h">프로세스 B (탭 B)</text>
+  <rect x="239" y="72"  width="137" height="28" class="stack"/>
+  <text x="307" y="90" class="lab">stack ↓  (무사)</text>
+  <rect x="239" y="104" width="137" height="28" class="proc"/>
+  <text x="307" y="122" class="lab">heap ↑</text>
+  <rect x="239" y="136" width="137" height="28" class="proc"/>
+  <text x="307" y="154" class="lab">code · data</text>
+  <rect x="225" y="204" width="165" height="26" class="pt"/>
+  <text x="307" y="221" class="lab">페이지 테이블 B</text>
+
+  <!-- wall -->
+  <line x1="210" y1="46" x2="210" y2="230" class="wall"/>
+
+  <!-- physical RAM -->
+  <rect x="30" y="262" width="360" height="56" class="ram"/>
+  <text x="210" y="280" class="h">물리 메모리 (RAM) — 서로 겹치지 않는 페이지</text>
+  <rect x="42"  y="288" width="160" height="22" class="proc"/>
+  <text x="122" y="303" class="lab">A 의 물리 페이지</text>
+  <rect x="216" y="288" width="162" height="22" class="stack"/>
+  <text x="297" y="303" class="lab">B 의 물리 페이지</text>
+  <line x1="112" y1="230" x2="122" y2="288" class="arrow" marker-end="url(#ar)"/>
+  <line x1="307" y1="230" x2="297" y2="288" class="arrow" marker-end="url(#ar)"/>
+
+  <text x="30" y="344" class="small">A 가 SIGSEGV 로 죽어도 커널은 A 의 페이지만 회수한다.</text>
+  <text x="30" y="362" class="small">B 는 페이지 테이블이 물리적으로 분리돼 A 의 주소를 가리킬 수조차 없다 → 무사.</text>
+
+  <!-- ================= RIGHT: threads share ================= -->
+  <text x="430" y="26" class="title">스레드 = 주소 공간 공유 (경량·위험)</text>
+
+  <rect x="430" y="46" width="390" height="200" class="proc"/>
+  <text x="625" y="64" class="h">프로세스 1개 (예: 렌더러) — 스레드 3개</text>
+
+  <rect x="444" y="74" width="362" height="40" class="shared"/>
+  <text x="625" y="90"  class="lab">공유: code · data · heap · 열린 fd 테이블</text>
+  <text x="625" y="107" class="small" text-anchor="middle">→ 스레드끼리 변수·힙을 직접 공유 → 통신은 공짜, 하지만 경합(race)</text>
+
+  <rect x="444" y="128" width="115" height="66" class="stack"/>
+  <text x="501" y="148" class="lab">스레드 1</text>
+  <text x="501" y="166" class="small" text-anchor="middle">stack</text>
+  <text x="501" y="182" class="small" text-anchor="middle">PC · SP · 레지스터</text>
+
+  <rect x="567" y="128" width="115" height="66" class="stack"/>
+  <text x="624" y="148" class="lab">스레드 2</text>
+  <text x="624" y="166" class="small" text-anchor="middle">stack</text>
+  <text x="624" y="182" class="small" text-anchor="middle">PC · SP · 레지스터</text>
+
+  <rect x="690" y="128" width="116" height="66" class="bad"/>
+  <text x="748" y="148" class="lab">스레드 3 (죽음)</text>
+  <text x="748" y="166" class="small" text-anchor="middle">stack</text>
+  <text x="748" y="182" class="small" text-anchor="middle">잘못된 포인터</text>
+
+  <rect x="444" y="208" width="362" height="26" class="pt"/>
+  <text x="625" y="225" class="lab">페이지 테이블 1개 (모두 공유)</text>
+
+  <text x="430" y="286" class="small" fill="#b91c1c">스레드 3 이 죽으면 주소 공간을 공유하므로 프로세스 전체가 붕괴한다.</text>
+  <text x="430" y="304" class="small">→ 그래서 브라우저는 탭을 "스레드"가 아니라 "프로세스"로 격리한다.</text>
+
+  <!-- takeaway -->
+  <rect x="30" y="392" width="790" height="52" fill="#eef2ff" stroke="#6366f1"/>
+  <text x="425" y="414" class="h">핵심: 격리의 정체는 '다른 페이지 테이블'이다. 프로세스는 벽을 세우고(비쌈), 스레드는 벽을 없앤다(빠름·위험).</text>
+  <text x="425" y="433" class="small" text-anchor="middle">벽을 세우는 하드웨어 메커니즘 = 가상 메모리(claude/07). 벽을 넘는 유일한 문 = IPC.</text>
+
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#374151"/>
+    </marker>
+  </defs>
+</svg>

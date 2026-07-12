@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 380" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .lab   { font: 11px sans-serif; fill: #374151; }
+    .cell  { font: 11px ui-monospace, monospace; fill: #111827; text-anchor: middle; }
+    .app   { fill: #ede9fe; stroke: #8b5cf6; }
+    .tcp   { fill: #dbeafe; stroke: #3b82f6; }
+    .ip    { fill: #dcfce7; stroke: #22c55e; }
+    .eth   { fill: #fef3c7; stroke: #f59e0b; }
+    .data  { fill: #f9fafb; stroke: #9ca3af; }
+  </style>
+
+  <text x="20" y="26" class="title">캡슐화(Encapsulation): 계층을 내려갈 때마다 헤더가 앞에 붙는다</text>
+
+  <!-- L7 Application -->
+  <text x="20" y="66" class="lab">App (HTTP)</text>
+  <rect x="130" y="52" width="470" height="30" class="data"/>
+  <text x="365" y="71" class="cell">GET /index.html  Host: site.com ...</text>
+
+  <!-- L4 Transport -->
+  <text x="20" y="112" class="lab">Transport (TCP)</text>
+  <rect x="130" y="98" width="120" height="30" class="tcp"/>
+  <text x="190" y="117" class="cell">TCP 헤더 20B</text>
+  <rect x="250" y="98" width="350" height="30" class="data"/>
+  <text x="425" y="117" class="cell">HTTP 데이터 (payload)</text>
+
+  <!-- L3 Internet -->
+  <text x="20" y="158" class="lab">Internet (IP)</text>
+  <rect x="130" y="144" width="120" height="30" class="ip"/>
+  <text x="190" y="163" class="cell">IP 헤더 20B</text>
+  <rect x="250" y="144" width="120" height="30" class="tcp"/>
+  <text x="310" y="163" class="cell">TCP 20B</text>
+  <rect x="370" y="144" width="230" height="30" class="data"/>
+  <text x="485" y="163" class="cell">payload</text>
+
+  <!-- L2 Link -->
+  <text x="20" y="204" class="lab">Link (Ethernet)</text>
+  <rect x="130" y="190" width="90"  height="30" class="eth"/>
+  <text x="175" y="209" class="cell">Eth 14B</text>
+  <rect x="220" y="190" width="90"  height="30" class="ip"/>
+  <text x="265" y="209" class="cell">IP 20B</text>
+  <rect x="310" y="190" width="90"  height="30" class="tcp"/>
+  <text x="355" y="209" class="cell">TCP 20B</text>
+  <rect x="400" y="190" width="160" height="30" class="data"/>
+  <text x="480" y="209" class="cell">payload</text>
+  <rect x="560" y="190" width="40"  height="30" class="eth"/>
+  <text x="580" y="209" class="cell">FCS</text>
+
+  <!-- MTU brace -->
+  <line x1="130" y1="234" x2="600" y2="234" stroke="#6b7280"/>
+  <line x1="130" y1="230" x2="130" y2="238" stroke="#6b7280"/>
+  <line x1="600" y1="230" x2="600" y2="238" stroke="#6b7280"/>
+  <text x="365" y="250" class="small" text-anchor="middle">이더넷 프레임 최대 = MTU 1500B (IP+TCP+데이터), 프레임 헤더 별도</text>
+
+  <text x="20" y="290" class="title">그래서 애플리케이션이 쓸 수 있는 실제 조각 = MSS</text>
+  <g transform="translate(20,300)" class="small">
+    <text y="16">MSS = MTU 1500 − IP 20 − TCP 20 = <tspan font-weight="600" fill="#3b82f6">1460 B</tspan> &#160; (TLS를 쓰면 레코드 헤더/암호문 오버헤드로 더 줄어듦)</text>
+    <text y="36">1 MB 응답 → 1460B 조각 약 <tspan font-weight="600">718개</tspan>로 쪼개져 각자 라우팅됨. 이것이 "패킷 단위 전송"의 실체.</text>
+    <text y="56">조각이 MTU보다 크면 IP 단편화(fragmentation) 또는 Path MTU Discovery로 크기를 낮춘다.</text>
+  </g>
+</svg>

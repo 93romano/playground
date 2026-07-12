@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 460" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .h     { font: 600 12px sans-serif; fill: #111827; text-anchor: middle; }
+    .small { font: 11px sans-serif; fill: #4b5563; }
+    .lab   { font: 11px ui-monospace, monospace; fill: #111827; text-anchor: middle; }
+    .sock  { fill: #bfdbfe; stroke: #3b82f6; }
+    .kernel{ fill: #ddd6fe; stroke: #8b5cf6; }
+    .ready { fill: #bbf7d0; stroke: #22c55e; }
+    .loop  { fill: #fef3c7; stroke: #f59e0b; }
+    .pool  { fill: #f3f4f6; stroke: #6b7280; }
+    .arrow { stroke: #374151; stroke-width: 1.4; fill: none; }
+    .green { stroke: #22c55e; stroke-width: 1.6; fill: none; }
+  </style>
+
+  <text x="20" y="26" class="title">epoll 이벤트 루프 — 스레드 1개로 수만 개의 fd 를 감시</text>
+
+  <!-- clients / sockets -->
+  <text x="90" y="52" class="h">연결(소켓 fd)</text>
+  <rect x="40" y="62"  width="100" height="24" class="sock"/><text x="90" y="79" class="lab">fd 4</text>
+  <rect x="40" y="92"  width="100" height="24" class="sock"/><text x="90" y="109" class="lab">fd 7 · 데이터!</text>
+  <rect x="40" y="122" width="100" height="24" class="sock"/><text x="90" y="139" class="lab">fd 9</text>
+  <rect x="40" y="152" width="100" height="24" class="sock"/><text x="90" y="169" class="lab">fd 12 · 데이터!</text>
+  <text x="90" y="196" class="small" text-anchor="middle">… fd 10000 까지</text>
+
+  <!-- kernel epoll object -->
+  <rect x="230" y="56" width="250" height="250" class="kernel"/>
+  <text x="355" y="76" class="h">커널 epoll 객체</text>
+
+  <rect x="246" y="88" width="218" height="96" fill="#ede9fe" stroke="#8b5cf6"/>
+  <text x="355" y="106" class="lab">관심 목록 (interest list)</text>
+  <text x="355" y="124" class="small" text-anchor="middle">epoll_ctl 로 한 번만 등록</text>
+  <text x="355" y="144" class="small" text-anchor="middle">fd 4 · 7 · 9 · 12 · … · 10000</text>
+  <text x="355" y="164" class="small" text-anchor="middle">O(1) 삽입 — 매번 복사 안 함</text>
+
+  <rect x="246" y="198" width="218" height="90" class="ready"/>
+  <text x="355" y="216" class="lab">준비 목록 (ready list)</text>
+  <text x="355" y="236" class="small" text-anchor="middle">데이터 도착 인터럽트가</text>
+  <text x="355" y="252" class="small" text-anchor="middle">해당 fd 를 여기로 이동</text>
+  <text x="355" y="274" class="lab">→ fd 7 · fd 12</text>
+
+  <!-- arrows sockets -> interest, data -> ready -->
+  <line x1="140" y1="74"  x2="244" y2="120" class="arrow" marker-end="url(#ar)"/>
+  <line x1="140" y1="104" x2="244" y2="230" class="green" marker-end="url(#ag)"/>
+  <line x1="140" y1="164" x2="244" y2="250" class="green" marker-end="url(#ag)"/>
+  <text x="150" y="98" class="small">등록</text>
+  <text x="150" y="200" class="small" fill="#16a34a">도착(IRQ, claude/09)</text>
+
+  <!-- event loop thread -->
+  <rect x="540" y="70" width="270" height="130" class="loop"/>
+  <text x="675" y="90" class="h">이벤트 루프 (스레드 1개)</text>
+  <text x="558" y="114" class="small">while (true) {</text>
+  <text x="572" y="132" class="small">n = epoll_wait();  // 준비될 때까지 잠</text>
+  <text x="572" y="150" class="small">for (준비된 fd) handle(fd);</text>
+  <text x="558" y="168" class="small">}</text>
+  <text x="675" y="190" class="small" text-anchor="middle">준비된 fd 2개만 처리 → 다시 잠 (CPU 0%)</text>
+
+  <line x1="480" y1="243" x2="620" y2="200" class="green" marker-end="url(#ag)"/>
+  <text x="548" y="232" class="small" fill="#16a34a">epoll_wait 가 준비된 것만 반환 O(k)</text>
+  <line x1="620" y1="140" x2="482" y2="130" class="arrow" marker-end="url(#ar)"/>
+  <text x="512" y="120" class="small">epoll_ctl</text>
+
+  <!-- thread pool for true blocking -->
+  <rect x="540" y="228" width="270" height="78" class="pool"/>
+  <text x="675" y="248" class="h">작은 스레드풀 (libuv 기본 4)</text>
+  <text x="675" y="268" class="small" text-anchor="middle">진짜 블로킹만 오프로드:</text>
+  <text x="675" y="286" class="small" text-anchor="middle">파일 read/write · DNS · crypto · CPU 작업</text>
+
+  <!-- bottom compare -->
+  <rect x="40" y="330" width="770" height="46" fill="#fef2f2" stroke="#ef4444"/>
+  <text x="425" y="350" class="h">select/poll: 매 호출마다 fd 1만 개 전체를 커널에 복사하고 전수 검사 → O(n)</text>
+  <text x="425" y="368" class="h" fill="#16a34a">epoll/kqueue: 등록은 한 번, 깨어나는 비용은 '준비된 fd 수'에만 비례 → O(k)</text>
+
+  <rect x="40" y="388" width="770" height="52" fill="#eef2ff" stroke="#6366f1"/>
+  <text x="425" y="410" class="h">Node libuv · 브라우저 이벤트 루프의 OS 뿌리가 바로 이 그림이다.</text>
+  <text x="425" y="429" class="small" text-anchor="middle">한 스레드가 자다 깨며 준비된 fd 만 처리 = 4단계(브라우저 이벤트 루프)로 이어진다.</text>
+
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#374151"/>
+    </marker>
+    <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#22c55e"/>
+    </marker>
+  </defs>
+</svg>

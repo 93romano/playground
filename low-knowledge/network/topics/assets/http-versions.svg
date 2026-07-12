@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 430" font-family="ui-monospace, SF Mono, Menlo, monospace">
+  <style>
+    .title { font: 600 14px sans-serif; fill: #111827; }
+    .h     { font: 600 13px sans-serif; fill: #111827; text-anchor: middle; }
+    .small { font: 10.5px sans-serif; fill: #4b5563; }
+    .lab   { font: 10px ui-monospace, monospace; fill: #111827; text-anchor: middle; }
+    .conn  { fill: #f3f4f6; stroke: #9ca3af; }
+    .r1 { fill: #93c5fd; stroke: #3b82f6; }
+    .r2 { fill: #86efac; stroke: #22c55e; }
+    .r3 { fill: #fca5a5; stroke: #ef4444; }
+    .r4 { fill: #c4b5fd; stroke: #8b5cf6; }
+    .blk { fill: #fee2e2; stroke: #ef4444; stroke-dasharray: 3 2; }
+  </style>
+
+  <text x="20" y="24" class="title">HTTP/1.1 vs HTTP/2 vs HTTP/3 — 같은 자원을 어떻게 나르나</text>
+
+  <!-- ===== HTTP/1.1 ===== -->
+  <text x="140" y="52" class="h">HTTP/1.1</text>
+  <text x="140" y="70" class="small" text-anchor="middle">오리진당 연결 ~6개, 연결마다 요청 직렬화</text>
+  <g transform="translate(30,84)">
+    <rect x="0" y="0"  width="220" height="22" class="conn"/>
+    <rect x="4" y="3"  width="60" height="16" class="r1"/><text x="34" y="15" class="lab">req1</text>
+    <rect x="66" y="3" width="60" height="16" class="r1"/><text x="96" y="15" class="lab">req2</text>
+    <rect x="128" y="3" width="60" height="16" class="r1"/><text x="158" y="15" class="lab">req3</text>
+    <text x="-8" y="15" class="lab" text-anchor="end">C1</text>
+    <rect x="0" y="28" width="220" height="22" class="conn"/>
+    <rect x="4" y="31" width="60" height="16" class="r2"/><text x="34" y="43" class="lab">req4</text>
+    <rect x="66" y="31" width="60" height="16" class="r2"/><text x="96" y="43" class="lab">req5</text>
+    <text x="-8" y="43" class="lab" text-anchor="end">C2</text>
+    <rect x="0" y="56" width="220" height="22" class="conn"/>
+    <text x="110" y="71" class="lab">... C3~C6</text>
+  </g>
+  <text x="140" y="188" class="small" text-anchor="middle">연결 내 앞 요청이 응답을 끝내야</text>
+  <text x="140" y="202" class="small" text-anchor="middle">다음이 감 → HOL. 그래서 도메인 샤딩</text>
+
+  <!-- ===== HTTP/2 ===== -->
+  <text x="390" y="52" class="h">HTTP/2</text>
+  <text x="390" y="70" class="small" text-anchor="middle">단일 TCP 연결에 스트림 다중화</text>
+  <g transform="translate(280,84)">
+    <rect x="0" y="0" width="220" height="78" class="conn"/>
+    <text x="-8" y="43" class="lab" text-anchor="end">TCP</text>
+    <rect x="6"   y="6" width="30" height="66" class="r1"/>
+    <rect x="40"  y="6" width="30" height="66" class="r2"/>
+    <rect x="74"  y="6" width="30" height="66" class="r3"/>
+    <rect x="108" y="6" width="30" height="66" class="r4"/>
+    <rect x="142" y="6" width="30" height="66" class="r1"/>
+    <rect x="176" y="6" width="30" height="66" class="r2"/>
+    <text x="110" y="88" class="lab">4개 스트림 프레임이 뒤섞여 전송</text>
+  </g>
+  <rect x="280" y="176" width="220" height="20" class="blk"/>
+  <text x="390" y="190" class="small" text-anchor="middle">패킷 1개 손실 → TCP가 전 스트림 정지</text>
+  <text x="390" y="212" class="small" text-anchor="middle">(TCP HOL) + HPACK 헤더 압축</text>
+
+  <!-- ===== HTTP/3 ===== -->
+  <text x="640" y="52" class="h">HTTP/3 (QUIC/UDP)</text>
+  <text x="640" y="70" class="small" text-anchor="middle">UDP 위 QUIC, 스트림별 독립 재전송</text>
+  <g transform="translate(530,84)">
+    <rect x="0" y="0" width="220" height="78" class="conn"/>
+    <text x="-8" y="43" class="lab" text-anchor="end">UDP</text>
+    <rect x="6"   y="6"  width="204" height="20" class="r1"/><text x="108" y="20" class="lab">stream A</text>
+    <rect x="6"   y="30" width="60"  height="20" class="blk"/><rect x="70" y="30" width="140" height="20" class="r2"/>
+    <text x="150" y="44" class="lab">stream B (A 손실 무관)</text>
+    <rect x="6"   y="54" width="204" height="20" class="r4"/><text x="108" y="68" class="lab">stream C</text>
+  </g>
+  <text x="640" y="188" class="small" text-anchor="middle">한 스트림 손실이 다른 스트림 안 막음</text>
+  <text x="640" y="202" class="small" text-anchor="middle">TLS 1.3 내장 · 0-RTT · 연결 이주(migration)</text>
+
+  <!-- summary table -->
+  <text x="20" y="248" class="title">한 줄 정리</text>
+  <g transform="translate(20,258)" class="small">
+    <text y="16"><tspan fill="#3b82f6" font-weight="600">1.1</tspan> 연결=병렬성. 연결 수로 승부 → 헤더 중복·TCP slow start 반복·서버 소켓 낭비</text>
+    <text y="36"><tspan fill="#22c55e" font-weight="600">2</tspan> 연결 1개 + 스트림 다중화로 HTTP HOL 해결. 하지만 <tspan fill="#ef4444">TCP HOL은 남음</tspan>. 샤딩·스프라이트는 이제 안티패턴</text>
+    <text y="56"><tspan fill="#8b5cf6" font-weight="600">3</tspan> 전송을 UDP로 내려 QUIC이 스트림을 직접 관리 → TCP HOL 제거. 핸드셰이크 1 RTT, 네트워크 바뀌어도 연결 유지</text>
+  </g>
+</svg>
